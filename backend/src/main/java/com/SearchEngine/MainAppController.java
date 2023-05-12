@@ -10,6 +10,7 @@ public class MainAppController {
 
     @RequestMapping("/get-home")
     String getHome(){
+        System.out.println("lolllerr");
         return "hi";
     }
 }
