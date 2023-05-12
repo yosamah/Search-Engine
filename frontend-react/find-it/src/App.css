@@ -6,7 +6,12 @@
   flex-direction: column;
   align-items: center;
   margin-block: 130px;
+  /* background-image: url('background.png'); */
 }
+
+/* .homepage{
+  background-image: url('background.png');
+} */
 
 .header{
   font-size: 40px;
