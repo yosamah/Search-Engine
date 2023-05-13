@@ -1,0 +1,32 @@
+[{
+  "_id": {
+    "$oid": "645ff460e5ee509fd6f528a8"
+  },
+  "play": {
+    "player": {
+      "urls": [
+        "www.youtube.com",
+        "www.google.com"
+      ],
+      "paragraph": [
+        "I am player from youtube.",
+        "I am player from google."
+      ],
+      "relevance": [
+        3,
+        5
+      ]
+    },
+    "playing": {
+      "url": [
+        "www.geeksforgeeks.com"
+      ],
+      "paragraph": [
+        "I am playing from geeks."
+      ],
+      "relevance": [
+        4
+      ]
+    }
+  }
+}]
