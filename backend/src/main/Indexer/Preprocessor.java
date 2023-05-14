@@ -3,37 +3,10 @@ import java.util.List;
 
 public class Preprocessor {
 
-
-    static String stopWordsFilePath="./backend/src/main/Indexer/StopWords.txt";
-    static List<String> StopWords;
-    static  String StopWordsRegex;
-    Preprocessor(){
-        try {
-        StopWords = stopWordsReader.ReadStopWords(stopWordsFilePath);
-
-        }catch (Exception e){
-
-        }
-        StopWordsRegex="(";
-        for(int i=0;i <StopWords.size();i++)
-        {
-            if(i!=StopWords.size()-1){
-                //notice the ingrained space here
-                StopWordsRegex+=StopWords.get(i)+"|";
-            }
-            else {
-                //notice the ingrained space here
-                StopWordsRegex+=StopWords.get(i)+") ";
-            }
-
-        }
-//        System.out.println(StopWordsRegex);
-    }
-
     static String preprocess(String Text){
         Text = Text.toLowerCase();
         // Remove Stop Words
-        Text= Text.replaceAll(StopWordsRegex," ");
+//        Text= Text.replaceAll(StopWordsRegex," ");
         // --Remove hyperlinks
         Text = Text.replaceAll(
                 "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",

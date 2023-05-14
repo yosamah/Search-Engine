@@ -32,7 +32,7 @@ public class Main {
 
             DBController.connect();
 //            Document worder = DBController.getWord("loler");
-            DBController.addSiteToWord("lol","lolxdd","h1","www.heher.com");
+//            DBController.addSiteToWord("lol","lolxdd","h1","www.heher.com");
 //            Document siter = DBController.getSiteInWord(worder, "www.hehe.com");
 //            DBController.addSiteOccurrence(worder,siter,"lolxdd","h1","www.hehe.com");
 //            System.out.println(worder);
@@ -53,7 +53,7 @@ public class Main {
 
             String currentDoc;
 
-            Preprocessor preprocessor = new Preprocessor();
+//            Preprocessor preprocessor = new Preprocessor();
             while(htmlsc.hasNext()){
                 //TODO: Remove the comment when testing is finished
                 //lastIndex++;
@@ -62,17 +62,7 @@ public class Main {
                 currentDoc=htmlsc.next();
                 currentDoc=htmlsc.next();
                 currentDoc=htmlsc.next();
-                org.jsoup.nodes.Document temp = Jsoup.connect(currentDoc).get();
-//                System.out.println(temp.title());
-//                System.out.println(temp.text());
-//                System.out.println(temp.select("h2").text());
-//                System.out.println(temp.select("h1").text());
-//                System.out.println(temp.select("p").text());
-//
-//
-//                System.out.println(preprocessor.preprocess( temp.select("h2").text()));
-//                System.out.println(preprocessor.preprocess(temp.select("h1").text()));
-//                System.out.println(preprocessor.preprocess(temp.select("p").text()));
+                DocumentProcessor.process("http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm");
 
             }
 

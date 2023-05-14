@@ -107,6 +107,8 @@ public class DBController {
                 .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs);
         List<Document> sites = (List<Document>)DBWord.get("sites");
 
+
+
         sites.remove(DBSite);
         sites.add(newSite);
         DBWord.append("sites",sites);
@@ -169,29 +171,34 @@ public class DBController {
 //            System.out.println("Adding new occurrence");
         addSiteOccurrence(word,site,paragraph,placeOfOccurrence,SiteURL);
 
-
-
     }
 
     ///////////////////////URL Collection//////////////////////////////
-    public static Document getSite(String siteURL) {
-        Bson projectionFields = Projections.fields(
-                Projections.excludeId());
-        Document DBSite = URLCollection.find(eq("url", siteURL))
-                .projection(projectionFields)
-                .first();
-        return DBSite;
-    }
-    public static void writeSite(String SiteURL){
-        Document site = getSite(SiteURL);
-        if (site !=null)
-            return;
-
-        Document newSite= new Document();
-        newSite.put("url", SiteURL);
-        newSite.put("popularity",0);
-        URLCollection.insertOne(newSite);
-
-    }
+//    public static Document getSite(String siteURL) {
+//        Bson projectionFields = Projections.fields(
+//                Projections.excludeId());
+//        Document DBSite = URLCollection.find(eq("url", siteURL))
+//                .projection(projectionFields)
+//                .first();
+//        return DBSite;
+//    }
+//    public static void writeSite(String SiteURL){
+//        Document site = getSite(SiteURL);
+//        if (site !=null)
+//            return;
+//
+//        Document newSite= new Document();
+//        newSite.put("url", SiteURL);
+//        newSite.put("popularity",0);
+//        URLCollection.insertOne(newSite);
+//
+//    }
+//
+//    public static void AddSite(String SiteURL){
+//        Document site= getSite(SiteURL);
+//        if(site != null)
+//            return;
+//        writeSite(SiteURL);
+//    }
 
 }

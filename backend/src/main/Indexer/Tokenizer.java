@@ -4,9 +4,42 @@ public class Tokenizer {
 
 
 
+    static String stopWordsFilePath="./backend/src/main/Indexer/StopWords.txt";
+    static List<String> StopWords;
+    static  String StopWordsRegex;
 
 
-    static public void writeTokens(String Text, String currentSite, String placeOfOccurrence) {
+    public Tokenizer(){
+        try {
+            StopWords = stopWordsReader.ReadStopWords(stopWordsFilePath);
+            StopWordsRegex=String.join("",StopWords);
+//            System.out.println(StopWordsRegex);
+
+        }catch (Exception e){
+
+        }
+//        StopWordsRegex="(";
+//        for(int i=0;i <StopWords.size();i++)
+//        {
+//            if(i!=StopWords.size()-1){
+//                //notice the ingrained space here
+//                StopWordsRegex+=StopWords.get(i)+"|";
+//            }
+//            else {
+//                //notice the ingrained space here
+//                StopWordsRegex+=StopWords.get(i)+") ";
+//            }
+//
+//        }
+    }
+
+    static  public  boolean isStopWord(String word){
+
+        return StopWordsRegex.contains(word);
+
+    }
+    //writes tokens to DB and returns them for use
+    static public String[] writeTokens(String Text, String currentSite, String placeOfOccurrence) {
         String[] words = Text.split(" ");
 
 
@@ -17,11 +50,17 @@ public class Tokenizer {
 
             if (words[i].length()==1)
                 continue;
+            if (isStopWord(words[i]))
+                continue;
 
             String word = words[i];
             String wordParagraph = getParagraph(words,i);
 
+            //TODO: write to DB here
+            DBController.addSiteToWord(word,wordParagraph,placeOfOccurrence,currentSite);
+
         }
+        return words;
     }
 
     public static String  getParagraph(String[] words, int index){
@@ -38,6 +77,7 @@ public class Tokenizer {
 
         return result.toString();
     }
+
 
 
 
