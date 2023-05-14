@@ -1,8 +1,8 @@
-package Services;
 
-import Database.Collections.Site;
-import Database.Collections.Word;
+import Collections.Word;
+import org.springframework.stereotype.Component;
 
+@Component
 public interface WordService {
 
     Word findWord(String word);

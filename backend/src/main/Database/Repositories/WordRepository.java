@@ -1,6 +1,6 @@
-package Database.Repositories;
+package Repositories;
 
-import Database.Collections.Word;
+import Collections.Word;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

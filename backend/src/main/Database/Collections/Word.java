@@ -1,10 +1,11 @@
-package Database.Collections;
+package Collections;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.List;
 
 // The schema of the Word collection in the Database
@@ -21,5 +22,5 @@ public class Word {
     String WordID;
 
     String word;
-    List<Site> Sites;
+    List<Collections.Site> Sites;
 }

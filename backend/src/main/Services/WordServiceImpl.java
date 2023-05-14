@@ -1,9 +1,8 @@
-package Services;
 
 
-import Database.Collections.Site;
-import Database.Collections.Word;
-import Database.Repositories.WordRepository;
+import Collections.Site;
+import Collections.Word;
+import Repositories.WordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,5 +16,7 @@ public class  WordServiceImpl implements WordService{
     public Word findWord(String word){
         return wordRepository.findByWord(word);
     }
+
+//    public void saveWord(Word word);
 
 }

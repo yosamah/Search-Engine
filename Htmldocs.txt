@@ -1,0 +1,5 @@
+https://www.w3schools.com/java/java_files_create.asp
+https://spring.io/projects/spring-data-mongodb
+https://www.mongodb.com/developer/languages/java/java-setup-crud-operations/#updates
+https://www.nationalgeographic.com/
+https://en.wikipedia.org/wiki/Article_(grammar)
