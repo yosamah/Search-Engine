@@ -7,6 +7,7 @@ import org.bson.Document;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.print.Doc;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,10 +32,13 @@ public class Main {
 
             DBController.connect();
 //            Document worder = DBController.getWord("loler");
+            DBController.addSiteToWord("lol","lolxdd","h1","www.heher.com");
+//            Document siter = DBController.getSiteInWord(worder, "www.hehe.com");
+//            DBController.addSiteOccurrence(worder,siter,"lolxdd","h1","www.hehe.com");
 //            System.out.println(worder);
 
-            DBController.getSiteinWord("loler","lol.com");
-            DBController.getSiteinWord("loler","www.youtube.com");
+//            DBController.getSiteinWord("loler","lol.com");
+//            DBController.getSiteinWord("loler","www.youtube.com");
 
             int lastIndex= lastIndexHandler.ReadLastIndex(lastIndexFilePath);
 
@@ -48,7 +52,7 @@ public class Main {
             while(counter<lastIndex && htmlsc.hasNext() ) htmlsc.next();
 
             String currentDoc;
-            
+
             Preprocessor preprocessor = new Preprocessor();
             while(htmlsc.hasNext()){
                 //TODO: Remove the comment when testing is finished
@@ -76,29 +80,8 @@ public class Main {
             //write the last document indexed
             lastIndexHandler.WriteLastIndex(lastIndexFilePath,lastIndex);
 
+            //Don't forget to calculate TF after the indexing finishes. and determine if spam too.
 
-
-//            System.out.println(lastIndex);
-//
-//            int lastIndexed = Integer.parseInt(Files.ReadFile("./out/indicator.txt"));
-//
-//
-//            Document newWord = new Document();
-//            newWord.put("word", "loler");
-//    //        {
-//    //            word: "lol",
-//    //            sites: [
-//    //                    {
-//    //                        URL: "lol.com",
-//    //                        paragraph:["lol xddd"],
-//    //                        placesOfOccurrence:["h1","h2","h3"],
-//    //                        noOfOccurrences: 3,
-//    //                        termFrequency: 0,
-//    //                        pagePopularity:0,
-//    //                        isSpam: false
-//    //                    }
-//    //            ]
-//    //        }
 
 
     }
