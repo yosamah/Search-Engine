@@ -1,32 +1,123 @@
 [{
   "_id": {
-    "$oid": "645ff460e5ee509fd6f528a8"
+    "$oid": "64626d3ed557d4032f9ccb6e"
   },
-  "play": {
-    "player": {
-      "urls": [
-        "www.youtube.com",
-        "www.google.com"
+  "root": "play",
+  "details": [
+    {
+      "original": "player",
+      "url": "www.youtube.com",
+      "paragraphs": [
+        "I am player from youtube."
       ],
-      "paragraph": [
-        "I am player from youtube.",
-        "I am player from google."
-      ],
-      "relevance": [
-        3,
-        5
+      "relevance": 3,
+      "popularity": 5,
+      "termFrequency": 1,
+      "score": 0,
+      "title": "play-youtube"
+    },
+    {
+      "original": "playing",
+      "url": "www.google.com",
+      "relevance": 5,
+      "popularity": 10,
+      "termFrequency": 3,
+      "score": 1,
+      "title": "plays-google",
+      "paragraphs": [
+        "plays plays",
+        "plays football",
+        "he plays a game."
       ]
     },
-    "playing": {
-      "url": [
-        "www.geeksforgeeks.com"
-      ],
-      "paragraph": [
-        "I am playing from geeks."
-      ],
-      "relevance": [
-        4
+    {
+      "original": "playing",
+      "url": "www.youtube.com",
+      "relevance": 6,
+      "popularity": 5,
+      "termFrequency": 1,
+      "score": 1,
+      "paragraphs": [
+        "I am playing from youtube."
+      ]
+    },
+    {
+      "original": "playing",
+      "url": "www.google.com",
+      "relevance": 1,
+      "popularity": 10,
+      "termFrequency": 2,
+      "score": 1,
+      "paragraphs": [
+        "playing google",
+        "I am playing from google."
       ]
     }
-  }
+  ]
+},{
+  "_id": {
+    "$oid": "64626f95d557d4032f9ccb6f"
+  },
+  "root": "game",
+  "details": [
+    {
+      "original": "gamer",
+      "url": "www.youtube.com",
+      "paragraphs": [
+        "I am game from youtube."
+      ],
+      "relevance": 3,
+      "popularity": 5,
+      "termFrequency": 1,
+      "score": 0
+    },
+    {
+      "original": "games",
+      "url": "www.google.com",
+      "data": [
+        "games games",
+        "games football",
+        "he games a game."
+      ],
+      "relevance": 5,
+      "popularity": 10,
+      "termFrequency": 3,
+      "score": 1
+    },
+    {
+      "original": "gaming",
+      "url": "www.youtube.com",
+      "data": [
+        "I am playing from youtube."
+      ],
+      "relevance": 6,
+      "popularity": 5,
+      "termFrequency": 1,
+      "score": 1
+    },
+    {
+      "original": "gaming",
+      "url": "www.google.com",
+      "data": [
+        "playing gaming",
+        "I am gaming from google."
+      ],
+      "relevance": 1,
+      "popularity": 10,
+      "termFrequency": 3,
+      "score": 1
+    },
+    {
+      "original": "game",
+      "url": "www.google.com",
+      "data": [
+        "game google",
+        "I am game from google."
+      ],
+      "relevance": 1,
+      "popularity": 10,
+      "termFrequency": 3,
+      "score": 1
+    }
+  ]
 }]
