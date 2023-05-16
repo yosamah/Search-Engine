@@ -75,6 +75,12 @@ public class DBController {
     }
 
 
+    //utility function for testing
+    public static void markAllasnonIndexed(){
+        //empty filter and set every indexed to false
+        pageCollection.updateMany(new Document(),new Document("$set", new Document("isIndexed", false)));
+    }
+
 
     /////////////////////////////////////////////Words Collection//////////////////////////////
 
@@ -251,7 +257,7 @@ public class DBController {
         Document wordSite= getSiteWord(root,Word,SiteURL);
 
         int noOfOcrrences= (int)wordSite.get("noOfOccurrences");
-        double TF= noOfOcrrences/TotalNoOfWords;
+        double TF= (double)noOfOcrrences/TotalNoOfWords;
         boolean isSpam= TF>0.2 ? true: false;
 
         Document newWord=  new Document("url", SiteURL).append("original",wordSite.get("original")).append("placesOfOccurrence", wordSite.get("placesOfOccurrence"))
