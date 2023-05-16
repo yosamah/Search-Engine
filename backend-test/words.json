@@ -10,11 +10,12 @@
       "paragraphs": [
         "I am player from youtube."
       ],
-      "relevance": 3,
+      "relevance": 100,
       "popularity": 5,
       "termFrequency": 1,
-      "score": 0,
-      "title": "play-youtube"
+      "score": 4,
+      "title": "play-youtube",
+      "idf": 15
     },
     {
       "original": "playing",
@@ -22,24 +23,26 @@
       "relevance": 5,
       "popularity": 10,
       "termFrequency": 3,
-      "score": 1,
+      "score": 7,
       "title": "plays-google",
       "paragraphs": [
         "plays plays",
         "plays football",
         "he plays a game."
-      ]
+      ],
+      "idf": 10
     },
     {
       "original": "playing",
       "url": "www.youtube.com",
-      "relevance": 6,
+      "relevance": 500,
       "popularity": 5,
       "termFrequency": 1,
-      "score": 1,
+      "score": 5,
       "paragraphs": [
         "I am playing from youtube."
-      ]
+      ],
+      "idf": 25
     },
     {
       "original": "playing",
@@ -47,11 +50,12 @@
       "relevance": 1,
       "popularity": 10,
       "termFrequency": 2,
-      "score": 1,
+      "score": 5,
       "paragraphs": [
         "playing google",
         "I am playing from google."
-      ]
+      ],
+      "idf": 60
     }
   ]
 },{
@@ -69,7 +73,8 @@
       "relevance": 3,
       "popularity": 5,
       "termFrequency": 1,
-      "score": 0
+      "score": 4,
+      "idf": 7
     },
     {
       "original": "games",
@@ -82,7 +87,8 @@
       "relevance": 5,
       "popularity": 10,
       "termFrequency": 3,
-      "score": 1
+      "score": 7,
+      "idf": 8
     },
     {
       "original": "gaming",
@@ -93,7 +99,8 @@
       "relevance": 6,
       "popularity": 5,
       "termFrequency": 1,
-      "score": 1
+      "score": 5,
+      "idf": 19
     },
     {
       "original": "gaming",
@@ -105,7 +112,8 @@
       "relevance": 1,
       "popularity": 10,
       "termFrequency": 3,
-      "score": 1
+      "score": 5,
+      "idf": 27
     },
     {
       "original": "game",
@@ -117,7 +125,8 @@
       "relevance": 1,
       "popularity": 10,
       "termFrequency": 3,
-      "score": 1
+      "score": 5,
+      "idf": 80
     }
   ]
 }]

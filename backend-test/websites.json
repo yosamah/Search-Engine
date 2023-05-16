@@ -1,0 +1,42 @@
+[{
+  "_id": {
+    "$oid": "6463a9f9f80788414f2c9061"
+  },
+  "url": "www.youtube.com",
+  "popularity": 0,
+  "outgoing_links": [
+    "www.google.com",
+    "www.geeksforgeeks.com",
+    "www.wikipedia.com"
+  ]
+},{
+  "_id": {
+    "$oid": "6463aad8f80788414f2c9062"
+  },
+  "url": "www.google.com",
+  "popularity": 0,
+  "outgoing_links": [
+    "www.geeksforgeeks.com",
+    "www.wikipedia.com"
+  ]
+},{
+  "_id": {
+    "$oid": "6463ab03f80788414f2c9063"
+  },
+  "url": "www.geeksforgeeks.com",
+  "popularity": 0,
+  "outgoing_links": [
+    "www.google.com",
+    "www.geeksforgeeks.com",
+    "www.wikipedia.com"
+  ]
+},{
+  "_id": {
+    "$oid": "6463ab3ff80788414f2c9064"
+  },
+  "url": "www.wikipedia.com",
+  "popularity": 0,
+  "outgoing_links": [
+    "www.youtube.com"
+  ]
+}]
