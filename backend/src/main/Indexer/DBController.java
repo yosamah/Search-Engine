@@ -94,7 +94,7 @@ public class DBController {
         return DBRoot;
     }
 
-    public static void creatRoot(String root) {
+    public static void createRoot(String root) {
         Document newRoot = new Document();
         newRoot.put("root", root);
         newRoot.put("details", new BasicDBList());
@@ -113,7 +113,7 @@ public class DBController {
 //    noOfOccurrences
 
     //creates a new word and inserts it into the collection
-    public static void createWordSite(Document root, String word, String paragraph, String placeOfOccurrence, String SiteURL, Double populariy) {
+    public static void createWordSite(Document root, String word, String paragraph, String placeOfOccurrence, String SiteURL, Double populariy, String title) {
         Document newWord = new Document();
         newWord.put("original", word);
         BasicDBList placesOfOccurrence = new BasicDBList();
@@ -123,7 +123,8 @@ public class DBController {
 
         newWord.append("url", SiteURL).append("placesOfOccurrence", placesOfOccurrence)
                 .append("noOfOccurrences", 1).append("termFrequency", 0)
-                .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs).append("popularity",populariy).append("IDF",0);
+                .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs).append("popularity",populariy).append("IDF",0)
+                .append("title",title);
 
         List <Document> details= (List<Document>) root.get("details");
         details.add(newWord);
@@ -148,7 +149,8 @@ public class DBController {
 
         Document newWord=  new Document("url", SiteURL).append("original",word.get("original")).append("placesOfOccurrence", placesOfOccurrence)
                 .append("noOfOccurrences", noOfOcrrences).append("termFrequency", 0)
-                .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs).append("popularity",word.get("popularity")).append("IDF",0);
+                .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs).append("popularity",word.get("popularity")).append("IDF",0)
+                .append("title",word.get("title"));
         List<Document> details = (List<Document>)root.get("details");
 
 
@@ -225,14 +227,14 @@ public class DBController {
 
     // A function that adds a new word if it doesn't exist, a new site if the existing word doesn't contain it
     // or a new occurrence to existing side.
-    public static void addSiteWordToRoot(String Root, String Word, String paragraph, String placeOfOccurrence, String SiteURL,double popularity) {
+    public static void addSiteWordToRoot(String Root, String Word, String paragraph, String placeOfOccurrence, String SiteURL,double popularity,String title) {
 
         Document root = getRoot(Root);
         if(root==null){
-            creatRoot(Root);
+            createRoot(Root);
             //TODO: add word to root here
             root = getRoot(Root);
-            createWordSite(root,Word,paragraph,placeOfOccurrence,SiteURL,popularity);
+            createWordSite(root,Word,paragraph,placeOfOccurrence,SiteURL,popularity,title);
             return;
         }
         //if there is a word-site pair
@@ -241,7 +243,7 @@ public class DBController {
         {
             System.out.println("Adding new word site");
 //            addSiteInWord(word,paragraph,placeOfOccurrence,SiteURL);
-            createWordSite(root,Word,paragraph,placeOfOccurrence,SiteURL,popularity);
+            createWordSite(root,Word,paragraph,placeOfOccurrence,SiteURL,popularity,title);
             return;
         }
         addWordSiteOccurrence(root,wordSite,paragraph,placeOfOccurrence,SiteURL);
@@ -262,7 +264,8 @@ public class DBController {
 
         Document newWord=  new Document("url", SiteURL).append("original",wordSite.get("original")).append("placesOfOccurrence", wordSite.get("placesOfOccurrence"))
                 .append("noOfOccurrences", noOfOcrrences).append("termFrequency", TF)
-                .append("relevance", 0).append("isSpam", isSpam).append("paragraphs", wordSite.get("paragraphs")).append("popularity",wordSite.get("popularity")).append("IDF",0);
+                .append("relevance", 0).append("isSpam", isSpam).append("paragraphs", wordSite.get("paragraphs")).append("popularity",wordSite.get("popularity")).append("IDF",0)
+                .append("title",wordSite.get("title"));
         List<Document> details = (List<Document>)root.get("details");
 
 

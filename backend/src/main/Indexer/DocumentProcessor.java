@@ -28,6 +28,7 @@ public class DocumentProcessor {
         String preprocessedString;
         int TotalNumberofWords=0;
         Tokenizer tok= new Tokenizer();
+        String title =htmldoc.select("title").text();
         for(int i =0 ;i <elementsList.size(); i++){
             String element= elementsList.get(i);
             preprocessedString= processElement(htmldoc,element);
@@ -35,7 +36,7 @@ public class DocumentProcessor {
                 continue;
             }
             TotalNumberofWords+=preprocessedString.length();
-            String [] tokens = Tokenizer.writeTokens(preprocessedString,DocumentURL,element,popularity);
+            String [] tokens = Tokenizer.writeTokens(preprocessedString,DocumentURL,element,popularity,title);
              uniqueWords.addAll(Arrays.asList(tokens));
         }
         //TODO: update Term Frequency and isSpam
@@ -62,6 +63,8 @@ public class DocumentProcessor {
         String preprocessedString;
         int TotalNumberofWords=0;
         Tokenizer tok= new Tokenizer();
+        String title =htmldoc.select("title").text();
+
         for(int i =0 ;i <elementsList.size(); i++){
             String element= elementsList.get(i);
             preprocessedString= processElement(htmldoc,element);
@@ -69,7 +72,7 @@ public class DocumentProcessor {
                 continue;
             }
             TotalNumberofWords+=preprocessedString.length();
-            String [] tokens = Tokenizer.writeTokens(preprocessedString,DocumentURL,element,popularity);
+            String [] tokens = Tokenizer.writeTokens(preprocessedString,DocumentURL,element,popularity,title);
             uniqueWords.addAll(Arrays.asList(tokens));
         }
         //TODO: update Term Frequency and isSpam
