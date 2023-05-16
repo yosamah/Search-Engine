@@ -1,11 +1,10 @@
-import Collections.Site;
-import Collections.Word;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -24,7 +23,8 @@ public class DBController {
     static String DBConnectionString = "mongodb://localhost:27017";
     static MongoDatabase database;
     static MongoCollection<Document> WordCollection;
-    static MongoCollection<Document> URLCollection;
+//    static MongoCollection<Document> URLCollection;
+    static MongoCollection<Document> pageCollection;
 
     public static void connect() {
 
@@ -41,20 +41,41 @@ public class DBController {
         } catch (Exception e) {
             System.out.println("Words Collection already exists");
         }
-        try {
-            database.createCollection("urls");
-            System.out.println("Created urls Collection");
-        } catch (Exception e) {
-            System.out.println("urls Collection already exists");
-        }
+//        try {
+//            database.createCollection("urls");
+//            System.out.println("Created urls Collection");
+//        } catch (Exception e) {
+//            System.out.println("urls Collection already exists");
+//        }
 
 
         System.out.println("===========================================================");
+//        URLCollection = database.getCollection("urls");
+//        htmlDocsCollection = database.getCollection("html");
         WordCollection = database.getCollection("words");
-        URLCollection = database.getCollection("urls");
+        pageCollection = database.getCollection("pages");
 
 
     }
+
+    ////////////////////////////////////////////Pages Collection/////////////////////////////////
+
+    public static Document getHTMLDoc(){
+        Bson filter= Filters.eq("isIndexed",false);
+        Document htmlDoc= pageCollection.find().first();
+        return htmlDoc;
+    }
+
+    public static void markDocAsIndexed(Document htmlDoc){
+        htmlDoc.put("isIndexed",true);
+        String id= htmlDoc.get("_id").toString();
+        pageCollection.updateOne(new BasicDBObject("_id",new ObjectId(id)),
+                new BasicDBObject( "$set", new BasicDBObject(htmlDoc)));
+    }
+
+
+
+    /////////////////////////////////////////////Words Collection//////////////////////////////
 
     public static Document getSiteInWord(Document DBword, String SiteURL) {
 
@@ -122,7 +143,7 @@ public class DBController {
 
     //returns null if didn't find it
     public static Document getWord(String word) {
-        WordCollection.find();
+//        WordCollection.find();
 //        Bson projectionFields = Projections.fields(
 //                Projections.excludeId());
         Document DBWord = WordCollection.find(eq("word", word))
@@ -172,6 +193,11 @@ public class DBController {
         addSiteOccurrence(word,site,paragraph,placeOfOccurrence,SiteURL);
 
     }
+
+    //TODO: Add functions to handle isSpam and TermFrequecny
+
+
+    //TODO: Change Structure according to new requirements
 
     ///////////////////////URL Collection//////////////////////////////
 //    public static Document getSite(String siteURL) {
