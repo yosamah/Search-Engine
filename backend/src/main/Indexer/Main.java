@@ -3,8 +3,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.print.Doc;
@@ -20,9 +21,6 @@ public class Main {
 
     static String lastIndexFilePath = "./backend/src/main/Indexer/lastIndex.txt";
     static String producedHTMLpath = "./Htmldocs.txt";
-//    static String stopWordsFilePath = "./backend/src/main/Indexer/StopWords.txt";
-    // static MongoDatabase database;
-    // static MongoCollection<Document> WordCollection;
     static String HTMLdocsPath=System.getProperty("user.dir");
 
     public static void main(String[] args) throws Exception, Throwable {
@@ -30,14 +28,6 @@ public class Main {
 //        System.out.println(workingDir);
 
         DBController.connect();
-        // Document worder = DBController.getWord("loler");
-        // DBController.addSiteToWord("lol","lolxdd","h1","www.heher.com");
-        // Document siter = DBController.getSiteInWord(worder, "www.hehe.com");
-        // DBController.addSiteOccurrence(worder,siter,"lolxdd","h1","www.hehe.com");
-        // System.out.println(worder);
-
-        // DBController.getSiteinWord("loler","lol.com");
-        // DBController.getSiteinWord("loler","www.youtube.com");
 
         int lastIndex = lastIndexHandler.ReadLastIndex(lastIndexFilePath);
 
@@ -54,26 +44,41 @@ public class Main {
             htmlsc.next();
 
         String currentDoc;
+        double currPopularity=0;
+        File htmlFile;
+        Document htmlDoc=DBController.getHTMLDoc();
+        while(htmlDoc!=null ){
+            System.out.println("============================================= LOOOOPINGGGGG=====================================");
+            htmlFile= new File ( HTMLdocsPath+htmlDoc.get("filepath"));
+//            org.jsoup.nodes.Document Doc= Jsoup.parse(htmlFile);
+            currentDoc=(String) htmlDoc.get("url");
+            currPopularity= (int)htmlDoc.get("popularity");
+            DocumentProcessor.process(htmlFile,currentDoc,currPopularity);
 
-        // Preprocessor preprocessor = new Preprocessor();
-        while (htmlsc.hasNext()) {
-            // TODO: Remove the comment when testing is finished
-            // lastIndex++;
-            currentDoc = htmlsc.next();
-            currentDoc = htmlsc.next();
-            currentDoc = htmlsc.next();
-            currentDoc = htmlsc.next();
-            currentDoc = htmlsc.next();
-//            Document doc = Jsoup.connect("http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm").get();
-//            Document doc = Jsoup.parse();
-
-            System.out.println(doc.body().text());
-            DocumentProcessor.process("http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm");
-
+            DBController.markDocAsIndexed(htmlDoc);
+            htmlDoc=DBController.getHTMLDoc();
         }
 
+        // Preprocessor preprocessor = new Preprocessor();
+//        while (htmlsc.hasNext()) {
+//            // TODO: Remove the comment when testing is finished
+//            // lastIndex++;
+//            currentDoc = htmlsc.next();
+//            currentDoc = htmlsc.next();
+//            currentDoc = htmlsc.next();
+//            currentDoc = htmlsc.next();
+//            currentDoc = htmlsc.next();
+////            Document doc = Jsoup.connect("http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm").get();
+////            Document doc = Jsoup.parse();
+//
+////            System.out.println(doc.body().text());
+////            DocumentProcessor.process("http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm",currPopularity);
+////            DocumentProcessor.process("https://www.playframework.com/",currPopularity);
+//
+//        }
+
         // write the last document indexed
-        lastIndexHandler.WriteLastIndex(lastIndexFilePath, lastIndex);
+//        lastIndexHandler.WriteLastIndex(lastIndexFilePath, lastIndex);
 
         // Don't forget to calculate TF after the indexing finishes. and determine if
         // spam too.

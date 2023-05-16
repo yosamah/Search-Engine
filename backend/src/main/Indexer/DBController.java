@@ -1,5 +1,6 @@
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DocumentToDBRefTransformer;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -62,7 +63,7 @@ public class DBController {
 
     public static Document getHTMLDoc(){
         Bson filter= Filters.eq("isIndexed",false);
-        Document htmlDoc= pageCollection.find().first();
+        Document htmlDoc= pageCollection.find(filter).first();
         return htmlDoc;
     }
 
@@ -77,127 +78,197 @@ public class DBController {
 
     /////////////////////////////////////////////Words Collection//////////////////////////////
 
-    public static Document getSiteInWord(Document DBword, String SiteURL) {
 
-        List<Document> Wordsites = (List<Document>)DBword.get("sites");
-        Document resSite=null;
-        for(int i=0; i< Wordsites.size(); i++){
-            Document site=Wordsites.get(i);
-            String url= (String) site.get("url");
-            if(url.equals(SiteURL)){
-                resSite=site;
-                break;
-            }
-        }
-        return resSite;
-    }
-
-    //adds a new site to the list of site in word
-    public static void addSiteInWord(Document DBWord, String paragraph, String placeOfOccurrence, String SiteURL){
-        BasicDBList placesOfOccurrence = new BasicDBList();
-        placesOfOccurrence.add(placeOfOccurrence);
-        BasicDBList paragraphs = new BasicDBList();
-        paragraphs.add(paragraph);
-
-        Document newSite=  new Document("url", SiteURL).append("placesOfOccurrence", placesOfOccurrence)
-                    .append("noOfOccurrences", 1).append("termFrequency", 0)
-                    .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs);
-        List<Document> sites = (List<Document>)DBWord.get("sites");
-
-        sites.add(newSite);
-        DBWord.append("sites",sites);
-        System.out.println(DBWord);
-
-        String id=  DBWord.get("_id").toString();
-
-        WordCollection.updateOne(new BasicDBObject("_id",new ObjectId(id)),
-                                 new BasicDBObject( "$set", new BasicDBObject(DBWord)));
-    }
-
-    //adds a new ocurrence to an exitsting site in the word
-    public static void addSiteOccurrence(Document DBWord,Document DBSite, String paragraph, String placeOfOccurrence, String SiteURL){
-        List<String> placesOfOccurrence = ( List<String>) DBSite.get("placesOfOccurrence");
-        placesOfOccurrence.add(placeOfOccurrence);
-        List<String> paragraphs = ( List<String>) DBSite.get("paragraphs");
-        paragraphs.add(paragraph);
-        int noOfOcrrences= (int)DBSite.get("noOfOccurrences");
-        noOfOcrrences+=1;
-
-        Document newSite=  new Document("url", SiteURL).append("placesOfOccurrence", placesOfOccurrence)
-                .append("noOfOccurrences", noOfOcrrences).append("termFrequency", 0)
-                .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs);
-        List<Document> sites = (List<Document>)DBWord.get("sites");
-
-
-
-        sites.remove(DBSite);
-        sites.add(newSite);
-        DBWord.append("sites",sites);
-        System.out.println(DBWord);
-
-        String id=  DBWord.get("_id").toString();
-
-        WordCollection.updateOne(new BasicDBObject("_id",new ObjectId(id)),
-                new BasicDBObject( "$set", new BasicDBObject(DBWord)));
-    }
-
-    //returns null if didn't find it
-    public static Document getWord(String word) {
-//        WordCollection.find();
-//        Bson projectionFields = Projections.fields(
-//                Projections.excludeId());
-        Document DBWord = WordCollection.find(eq("word", word))
+    /////Roots
+//    root —-->  root: “play”
+//    details: [Words]
+    public static Document getRoot(String rootWord){
+        Document DBRoot = WordCollection.find(eq("root", rootWord))
                 .first();
-        return DBWord;
+        return DBRoot;
     }
 
+    public static void creatRoot(String root) {
+        Document newRoot = new Document();
+        newRoot.put("root", root);
+        newRoot.put("details", new BasicDBList());
+        WordCollection.insertOne(newRoot);
+    }
+
+    /////Words
+//    word —> original : “player”
+//    url: “lol.com”
+//    paragraphs:[“lol”,”lol”]
+//    relevance
+//    places of Ocurrences
+//    TF
+//    popularity
+//    isSpam
+//    noOfOccurrences
 
     //creates a new word and inserts it into the collection
-    public static void createWord(String word, String paragraph, String placeOfOccurrence, String SiteURL) {
+    public static void createWordSite(Document root, String word, String paragraph, String placeOfOccurrence, String SiteURL, Double populariy) {
         Document newWord = new Document();
-        newWord.put("word", word);
+        newWord.put("original", word);
         BasicDBList placesOfOccurrence = new BasicDBList();
         placesOfOccurrence.add(placeOfOccurrence);
         BasicDBList paragraphs = new BasicDBList();
         paragraphs.add(paragraph);
 
-        Document newSite = new Document("url", SiteURL).append("placesOfOccurrence", placesOfOccurrence)
+        newWord.append("url", SiteURL).append("placesOfOccurrence", placesOfOccurrence)
                 .append("noOfOccurrences", 1).append("termFrequency", 0)
-                .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs);
+                .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs).append("popularity",populariy).append("IDF",0);
 
-        BasicDBList sites = new BasicDBList();
-        sites.add(newSite);
-        newWord.append("sites", sites);
-        WordCollection.insertOne(newWord);
+        List <Document> details= (List<Document>) root.get("details");
+        details.add(newWord);
+
+        root.append("details",details);
+
+        String id=  root.get("_id").toString();
+
+        WordCollection.updateOne(new BasicDBObject("_id",new ObjectId(id)),
+                new BasicDBObject( "$set", new BasicDBObject(root)));
 
     }
+
+    //adds a new ocurrence to an exitsting word in the collection
+    public static void addWordSiteOccurrence(Document root, Document word,String paragraph, String placeOfOccurrence, String SiteURL){
+        List<String> placesOfOccurrence = ( List<String>) word.get("placesOfOccurrence");
+        placesOfOccurrence.add(placeOfOccurrence);
+        List<String> paragraphs = ( List<String>) word.get("paragraphs");
+        paragraphs.add(paragraph);
+        int noOfOcrrences= (int)word.get("noOfOccurrences");
+        noOfOcrrences+=1;
+
+        Document newWord=  new Document("url", SiteURL).append("original",word.get("original")).append("placesOfOccurrence", placesOfOccurrence)
+                .append("noOfOccurrences", noOfOcrrences).append("termFrequency", 0)
+                .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs).append("popularity",word.get("popularity")).append("IDF",0);
+        List<Document> details = (List<Document>)root.get("details");
+
+
+
+        details.remove(word);
+        details.add(newWord);
+        root.append("details",details);
+        String id=  root.get("_id").toString();
+        WordCollection.updateOne(new BasicDBObject("_id",new ObjectId(id)),
+                new BasicDBObject( "$set", new BasicDBObject(root)));
+    }
+
+
+
+//    public static Document getSiteInWord(Document DBword, String SiteURL) {
+//
+//        List<Document> Wordsites = (List<Document>)DBword.get("sites");
+//        Document resSite=null;
+//        for(int i=0; i< Wordsites.size(); i++){
+//            Document site=Wordsites.get(i);
+//            String url= (String) site.get("url");
+//            if(url.equals(SiteURL)){
+//                resSite=site;
+//                break;
+//            }
+//        }
+//        return resSite;
+//    }
+
+    //adds a new site to the list of site in word
+//    public static void addSiteInWord(Document DBWord, String paragraph, String placeOfOccurrence, String SiteURL){
+//        BasicDBList placesOfOccurrence = new BasicDBList();
+//        placesOfOccurrence.add(placeOfOccurrence);
+//        BasicDBList paragraphs = new BasicDBList();
+//        paragraphs.add(paragraph);
+//
+//        Document newSite=  new Document("url", SiteURL).append("placesOfOccurrence", placesOfOccurrence)
+//                    .append("noOfOccurrences", 1).append("termFrequency", 0)
+//                    .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs);
+//        List<Document> sites = (List<Document>)DBWord.get("sites");
+//
+//        sites.add(newSite);
+//        DBWord.append("sites",sites);
+//        System.out.println(DBWord);
+//
+//        String id=  DBWord.get("_id").toString();
+//
+//        WordCollection.updateOne(new BasicDBObject("_id",new ObjectId(id)),
+//                                 new BasicDBObject( "$set", new BasicDBObject(DBWord)));
+//    }
+
+
+
+    //returns null if didn't find it
+//    public static Document getWord(String word) {
+//        Document DBWord = WordCollection.find(eq("word", word))
+//                .first();
+//        return DBWord;
+//    }
+
+    public static Document getSiteWord(Document root  ,String word, String SiteURL) {
+        Document DBword = null;
+        for (Document wordDoc : (List<Document>) root.get("details")) {
+            if (wordDoc.get("original").equals(word) && wordDoc.get("url").equals(SiteURL)) {
+                DBword = wordDoc;
+                break;
+            }
+
+        }
+        return DBword;
+    }
+
+
 
     // A function that adds a new word if it doesn't exist, a new site if the existing word doesn't contain it
     // or a new occurrence to existing side.
-    public static void addSiteToWord(String Word, String paragraph, String placeOfOccurrence, String SiteURL) {
+    public static void addSiteWordToRoot(String Root, String Word, String paragraph, String placeOfOccurrence, String SiteURL,double popularity) {
 
-        Document word = getWord(Word);
-        if(word==null){
-            createWord(Word,paragraph,placeOfOccurrence, SiteURL);
+        Document root = getRoot(Root);
+        if(root==null){
+            creatRoot(Root);
+            //TODO: add word to root here
+            root = getRoot(Root);
+            createWordSite(root,Word,paragraph,placeOfOccurrence,SiteURL,popularity);
             return;
         }
-        //if there is a word
-        Document site =  getSiteInWord(word,SiteURL);
-        if(site ==null)
+        //if there is a word-site pair
+        Document wordSite= getSiteWord(root,Word,SiteURL);
+        if(wordSite ==null)
         {
-//            System.out.println("Adding new site");
-            addSiteInWord(word,paragraph,placeOfOccurrence,SiteURL);
+            System.out.println("Adding new word site");
+//            addSiteInWord(word,paragraph,placeOfOccurrence,SiteURL);
+            createWordSite(root,Word,paragraph,placeOfOccurrence,SiteURL,popularity);
             return;
         }
+        addWordSiteOccurrence(root,wordSite,paragraph,placeOfOccurrence,SiteURL);
 //            System.out.println("Adding new occurrence");
-        addSiteOccurrence(word,site,paragraph,placeOfOccurrence,SiteURL);
+//        addSiteOccurrence(word,site,paragraph,placeOfOccurrence,SiteURL);
 
     }
 
     //TODO: Add functions to handle isSpam and TermFrequecny
+    public static void updateWordSiteTF(String Root, String Word, String SiteURL, int TotalNoOfWords){
+        Document root = getRoot(Root);
+        System.out.println("Currently on " + Root +" " + Word +" " + SiteURL);
+        Document wordSite= getSiteWord(root,Word,SiteURL);
+
+        int noOfOcrrences= (int)wordSite.get("noOfOccurrences");
+        double TF= noOfOcrrences/TotalNoOfWords;
+        boolean isSpam= TF>0.2 ? true: false;
+
+        Document newWord=  new Document("url", SiteURL).append("original",wordSite.get("original")).append("placesOfOccurrence", wordSite.get("placesOfOccurrence"))
+                .append("noOfOccurrences", noOfOcrrences).append("termFrequency", TF)
+                .append("relevance", 0).append("isSpam", isSpam).append("paragraphs", wordSite.get("paragraphs")).append("popularity",wordSite.get("popularity")).append("IDF",0);
+        List<Document> details = (List<Document>)root.get("details");
 
 
-    //TODO: Change Structure according to new requirements
+
+        details.remove(wordSite);
+        details.add(newWord);
+        root.append("details",details);
+        String id=  root.get("_id").toString();
+        WordCollection.updateOne(new BasicDBObject("_id",new ObjectId(id)),
+                new BasicDBObject( "$set", new BasicDBObject(root)));
+    }
+
 
     ///////////////////////URL Collection//////////////////////////////
 //    public static Document getSite(String siteURL) {

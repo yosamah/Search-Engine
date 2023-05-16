@@ -6,40 +6,29 @@ public class Tokenizer {
 
     static String stopWordsFilePath="./backend/src/main/Indexer/StopWords.txt";
     static List<String> StopWords;
-    static  String StopWordsRegex;
+    static  String StopWordsAggr;
+    static  Stemmer stemmer;
 
 
     public Tokenizer(){
         try {
             StopWords = stopWordsReader.ReadStopWords(stopWordsFilePath);
-            StopWordsRegex=String.join("",StopWords);
+            StopWordsAggr=String.join("",StopWords);
 //            System.out.println(StopWordsRegex);
 
         }catch (Exception e){
 
         }
-//        StopWordsRegex="(";
-//        for(int i=0;i <StopWords.size();i++)
-//        {
-//            if(i!=StopWords.size()-1){
-//                //notice the ingrained space here
-//                StopWordsRegex+=StopWords.get(i)+"|";
-//            }
-//            else {
-//                //notice the ingrained space here
-//                StopWordsRegex+=StopWords.get(i)+") ";
-//            }
-//
-//        }
+        stemmer = new Stemmer();
     }
 
     static  public  boolean isStopWord(String word){
 
-        return StopWordsRegex.contains(word);
+        return StopWordsAggr.contains(word);
 
     }
     //writes tokens to DB and returns them for use
-    static public String[] writeTokens(String Text, String currentSite, String placeOfOccurrence) {
+    static public String[] writeTokens(String Text, String currentSite, String placeOfOccurrence,double popularity) {
         String[] words = Text.split(" ");
 
 
@@ -55,9 +44,32 @@ public class Tokenizer {
 
             String word = words[i];
             String wordParagraph = getParagraph(words,i);
+            String root = stemmer.stem(word);
+            DBController.addSiteWordToRoot(root,word,wordParagraph,placeOfOccurrence,currentSite,popularity);
 
+        }
+        return words;
+    }
+
+    static public String[] updateWordsTF(String Text, String currentSite,int TotalNoOfWords) {
+        String[] words = Text.split(" ");
+
+
+        for (int i = 0; i < words.length; i++) {
+
+            if (words[i]=="")
+                continue;
+
+            if (words[i].length()==1)
+                continue;
+            if (isStopWord(words[i]))
+                continue;
+
+            String word = words[i];
+            String root = stemmer.stem(word);
+            System.out.println(root);
             //TODO: write to DB here
-            DBController.addSiteToWord(word,wordParagraph,placeOfOccurrence,currentSite);
+            DBController.updateWordSiteTF(root,word,currentSite,TotalNoOfWords);
 
         }
         return words;
