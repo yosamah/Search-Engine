@@ -23,7 +23,7 @@ public class MainAppService {
 
 
 
-    List<WordsEntity> search(String searchedWord, int pageNumber) {
+    List<WordsEntity> search(String searchedWord) {
 
 
         boolean isExactSearch = searchedWord.charAt(0) == '"';      // exact search (phrasal) must start with "
@@ -34,15 +34,13 @@ public class MainAppService {
         searchedWord = searchedWord.replaceAll(" [a-zA-Z0-9] ", " ");
         // --Replace 2 or more white spaces with a single white space
         searchedWord = searchedWord.replaceAll("\\s{2,}", " ");
-        pageNumber--;       // for 0-indexing
-        List<WordsEntity> exactSearch = isExactSearch? this.searchExact(searchedWord): this.searchNotExact(searchedWord);      // returns a list of sites that contain the exact phrase
         // Check start index
         // 8albn start: Math.min(pageNumber*10, exactSearch.size() - 10)
         // 3lshan lw edany page akbr mn el total bta3na, azherlo 2a5er 10 results bs
         // y3ny if pageNumber* 10 > exactSearch.size(). kda hageblo 2a5er 10 results 
         // 3ayzeen nt2aked enena msh bn3ml el 7esba dyh kol mara, w bngeeb el search results mara wa7da bs actually
 //        return exactSearch.subList(pageNumber*10, Math.min(pageNumber*10+10, exactSearch.size()));
-        return exactSearch;
+        return isExactSearch? this.searchExact(searchedWord): this.searchNotExact(searchedWord);
     }
 
 
