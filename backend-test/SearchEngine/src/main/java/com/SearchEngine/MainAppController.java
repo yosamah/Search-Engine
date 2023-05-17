@@ -1,10 +1,8 @@
 package com.SearchEngine;
 
 
-import com.SearchEngine.database.MongoDBService;
-import com.SearchEngine.database.MongoDbEntity;
+import com.SearchEngine.database.WordsEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,8 +22,8 @@ public class MainAppController {
     }
 
     @GetMapping("/search")
-    List<MongoDbEntity> search( @RequestParam String searchedWord,
-                                @RequestParam int pageNum){
+    List<WordsEntity> search(@RequestParam String searchedWord,
+                             @RequestParam int pageNum){
         return this.mainAppService.search(searchedWord, pageNum);
     }
 }

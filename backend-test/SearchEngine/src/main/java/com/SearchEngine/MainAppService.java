@@ -2,7 +2,7 @@ package com.SearchEngine;
 
 
 import com.SearchEngine.database.MongoDBService;
-import com.SearchEngine.database.MongoDbEntity;
+import com.SearchEngine.database.WordsEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +23,10 @@ public class MainAppService {
 
 
 
-    List<MongoDbEntity> search(String searchedWord, int pageNumber) {
+    List<WordsEntity> search(String searchedWord, int pageNumber) {
 
-        
+
+        boolean isExactSearch = searchedWord.charAt(0) == '"';      // exact search (phrasal) must start with "
         // --Remove special charachters
         searchedWord = searchedWord.replaceAll("-", " ");
         searchedWord = searchedWord.replaceAll("[-®#%~!@#$%^&*()_+/*?<>':;–.,`’\"\\[\\]]+", " ");
@@ -33,36 +34,35 @@ public class MainAppService {
         searchedWord = searchedWord.replaceAll(" [a-zA-Z0-9] ", " ");
         // --Replace 2 or more white spaces with a single white space
         searchedWord = searchedWord.replaceAll("\\s{2,}", " ");
-
         pageNumber--;       // for 0-indexing
-        boolean isExactSearch = searchedWord.charAt(0) == '"';      // exact search (phrasal) must start with " 
-        List<MongoDbEntity> exactSearch =  this.searchExact(searchedWord);      // returns a list of sites that contain the exact phrase
+        List<WordsEntity> exactSearch = isExactSearch? this.searchExact(searchedWord): this.searchNotExact(searchedWord);      // returns a list of sites that contain the exact phrase
         // Check start index
         // 8albn start: Math.min(pageNumber*10, exactSearch.size() - 10)
         // 3lshan lw edany page akbr mn el total bta3na, azherlo 2a5er 10 results bs
         // y3ny if pageNumber* 10 > exactSearch.size(). kda hageblo 2a5er 10 results 
-        return exactSearch.subList(pageNumber*10, Math.min(pageNumber*10+10, exactSearch.size()));
         // 3ayzeen nt2aked enena msh bn3ml el 7esba dyh kol mara, w bngeeb el search results mara wa7da bs actually
-
+//        return exactSearch.subList(pageNumber*10, Math.min(pageNumber*10+10, exactSearch.size()));
+        return exactSearch;
     }
 
 
 
-    List<MongoDbEntity> searchExact(String searchedWord){
+    List<WordsEntity> searchExact(String searchedWord){
 
+        searchedWord = searchedWord.trim();
         // searchedWord dh elly el user katabo
         List<String> processedWords=this.utilityService.removeStopWords(searchedWord);  // remove stop words and return list of words
         String processedString = String.join(" ", processedWords);                      // return string mn el list of words
-        List<MongoDbEntity> sites = this.mongoDBService.searchByExactWord(stemmerService.stem(processedWords.get(0)),processedWords.get(0),200);
+        List<WordsEntity> sites = this.mongoDBService.searchByExactWord(stemmerService.stem(processedWords.get(0)),processedWords.get(0),200);
         // searching for the first words, and getting 200 results (number might be modified later)
         // byb2o sorted descendingly by score
-        List<MongoDbEntity> matchedResult = new ArrayList<>();
+        List<WordsEntity> matchedResult = new ArrayList<>();
 
         List<String> stemmedWords = new ArrayList<>();
         for (String processedWord : processedWords) stemmedWords.add(stemmerService.stem(processedWord));
 
         // TODO: Check the relevance of other words (na5do m3ana fl e3tebar y3ny)
-        for(MongoDbEntity site: sites){
+        for(WordsEntity site: sites){
             // loop 3l 200 site elly rg3o
             for(String paragraph: site.getDetails().getParagraphs()){
                 // loop 3l paragraphs bta3t el site, shoof lw fyh el phrase elly el user 3ayezha
@@ -79,11 +79,40 @@ public class MainAppService {
                 }
             }
         }
-        MongoDbEntity.sortEntitiesByScore(matchedResult);
+        WordsEntity.sortEntitiesByScore(matchedResult);
         return matchedResult;
     }
 
 
 
+    List<WordsEntity> searchNotExact(String searchedWord){
 
+        List<String> processedWords=this.utilityService.removeStopWords(searchedWord);  // remove stop words and return list of words
+
+        List<String> stemmedWords = new ArrayList<>();
+        for (String processedWord : processedWords) stemmedWords.add(stemmerService.stem(processedWord));
+
+
+        int numOfSitesRetrieved  = processedWords.size() == 1? 200:100;
+        Map<String, WordsEntity> currentRetrievedSites = new HashMap<>();
+        for(int i = 0; i < processedWords.size(); ++i) {
+            List<WordsEntity> currentSites = this.mongoDBService.searchByRootWord(stemmedWords.get(i), numOfSitesRetrieved);
+            for(WordsEntity site: currentSites){
+                if(currentRetrievedSites.containsKey(site.getDetails().getUrl())){
+                    double currentScore = Objects.equals(site.getDetails().getOriginal(), processedWords.get(i)) ?
+                            site.getDetails().getScore()*1.2 : site.getDetails().getScore();
+                    double prevScore = currentRetrievedSites.get(site.getDetails().getUrl()).getDetails().getScore();
+                    currentRetrievedSites.get(site.getDetails().getUrl()).getDetails().setScore(currentScore + prevScore);
+                }else {
+                    double currentScore = Objects.equals(site.getDetails().getOriginal(), processedWords.get(i)) ?
+                            site.getDetails().getScore()*1.2 : site.getDetails().getScore();
+                    site.getDetails().setScore(currentScore);
+                    currentRetrievedSites.put(site.getDetails().getUrl(), site);
+                }
+            }
+        }
+        List<WordsEntity> resultSearch = new ArrayList<>(currentRetrievedSites.values());
+        WordsEntity.sortEntitiesByScore(resultSearch);
+        return  resultSearch;
+    }
 }

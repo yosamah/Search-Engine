@@ -1,6 +1,5 @@
 package com.SearchEngine.database;
 
-import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,12 +33,12 @@ public class MongoDBController {
     }
 
     @GetMapping("/search-by-exact-word")
-    List<MongoDbEntity> searchByExactWord() {
+    List<WordsEntity> searchByExactWord() {
         return this.mongoDBService.searchByExactWord("play", "playing", 2);
     }
 
     @GetMapping("/search-by-root-word")
-    List<MongoDbEntity> searchByRootWord() {
+    List<WordsEntity> searchByRootWord() {
         return this.mongoDBService.searchByRootWord("game", 10);
     }
 
@@ -59,7 +58,7 @@ public class MongoDBController {
     }
 
     @GetMapping("/get-all-words")
-    List<MongoDbEntity> getAllWords() {
+    List<WordsEntity> getAllWords() {
         return this.mongoDBService.getAllWordsUnWindDetails();
     }
     @GetMapping("/get-count-all-words")

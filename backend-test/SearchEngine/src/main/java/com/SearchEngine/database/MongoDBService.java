@@ -122,7 +122,7 @@ public class MongoDBService {
         mongoTemplate.updateMulti(query, update, "words");
     }
 
-    public List<MongoDbEntity> searchByExactWord(String rootWord, String originalWord, int limitElements) {
+    public List<WordsEntity> searchByExactWord(String rootWord, String originalWord, int limitElements) {
         // search for an exact (original) word in the database and returns 
         // its links sorted descendingly according to their score
         
@@ -142,11 +142,11 @@ public class MongoDBService {
         Aggregation aggregation = Aggregation.newAggregation(matchRoot, unwind, matchOriginal, sort, Aggregation.limit(limitElements));
 
         // Execute the aggregation query
-        AggregationResults<MongoDbEntity> searchResults = mongoTemplate.aggregate(aggregation, "words", MongoDbEntity.class);
+        AggregationResults<WordsEntity> searchResults = mongoTemplate.aggregate(aggregation, "words", WordsEntity.class);
         return searchResults.getMappedResults();
     }
 
-    public List<MongoDbEntity> searchByRootWord(String rootWord, int limitElements) {
+    public List<WordsEntity> searchByRootWord(String rootWord, int limitElements) {
         // search for a word by its root in the database and returns 
         // its links sorted descendingly according to their score
 
@@ -163,7 +163,7 @@ public class MongoDBService {
         Aggregation aggregation = Aggregation.newAggregation(matchRoot, unwind, sort, Aggregation.limit(limitElements));
 
         // Execute the aggregation query and get the result as Document
-        AggregationResults<MongoDbEntity> searchResults = mongoTemplate.aggregate(aggregation, "words", MongoDbEntity.class);
+        AggregationResults<WordsEntity> searchResults = mongoTemplate.aggregate(aggregation, "words", WordsEntity.class);
         return searchResults.getMappedResults();
     }
 
@@ -172,9 +172,9 @@ public class MongoDBService {
         return mongoTemplate.findAll(WebsiteEntity.class, "websites");
     }
 
-    public List<MongoDbEntity> getAllWords() {
+    public List<WordsEntity> getAllWords() {
         // returns the Words collection
-        return mongoTemplate.findAll(MongoDbEntity.class, "words");
+        return mongoTemplate.findAll(WordsEntity.class, "words");
     }
 
 
@@ -247,11 +247,11 @@ public class MongoDBService {
         return true;        // success
     }
 
-    public List<MongoDbEntity> getAllWordsUnWindDetails() {
+    public List<WordsEntity> getAllWordsUnWindDetails() {
         AggregationOperation unwind = Aggregation.unwind("details");
         Aggregation aggregation = Aggregation.newAggregation(unwind);
 
-        AggregationResults<MongoDbEntity> results = mongoTemplate.aggregate(aggregation, "words", MongoDbEntity.class);
+        AggregationResults<WordsEntity> results = mongoTemplate.aggregate(aggregation, "words", WordsEntity.class);
 
         return results.getMappedResults();
     }
