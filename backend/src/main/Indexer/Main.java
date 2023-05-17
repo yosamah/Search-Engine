@@ -40,7 +40,9 @@ public class Main {
         Document htmlDoc=DBController.getHTMLDoc();
         while(htmlDoc!=null ){
             System.out.println("============================================= LOOOOPINGGGGG=====================================");
-            htmlFile= new File ( HTMLdocsPath+htmlDoc.get("filepath"));
+            System.out.println("Opening " +HTMLdocsPath+htmlDoc.get("filePath") );
+
+            htmlFile= new File ( HTMLdocsPath+htmlDoc.get("filePath"));
 //            org.jsoup.nodes.Document Doc= Jsoup.parse(htmlFile);
             currentDoc=(String) htmlDoc.get("url");
             currPopularity= (int)htmlDoc.get("popularity");
