@@ -24,6 +24,7 @@ public class MongoDbEntity {
         private int popularity;
         private int termFrequency;
         private int score;
+        private String title;
 
         // Getters and setters
     }
