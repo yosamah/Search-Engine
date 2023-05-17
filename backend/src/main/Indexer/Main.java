@@ -19,18 +19,12 @@ import java.util.*;
 
 public class Main {
 
-    static String lastIndexFilePath = "./backend/src/main/Indexer/lastIndex.txt";
     static String producedHTMLpath = "./Htmldocs.txt";
     static String HTMLdocsPath=System.getProperty("user.dir");
 
     public static void main(String[] args) throws Exception, Throwable {
-//        String workingDir = System.getProperty("user.dir");
-//        System.out.println(workingDir);
 
         DBController.connect();
-
-        int lastIndex = lastIndexHandler.ReadLastIndex(lastIndexFilePath);
-
 
         //TODO: Change interface to either read from filepath from DB
         File producedHTMLFiles = new File(producedHTMLpath);
@@ -39,9 +33,6 @@ public class Main {
 
         htmlsc.useDelimiter("\n");
         int counter = 0;
-        // move cursor to lastIndex
-        while (counter < lastIndex && htmlsc.hasNext())
-            htmlsc.next();
 
         String currentDoc;
         double currPopularity=0;
@@ -59,20 +50,11 @@ public class Main {
             htmlDoc=DBController.getHTMLDoc();
         }
 
-        // Preprocessor preprocessor = new Preprocessor();
 //        while (htmlsc.hasNext()) {
 //            // TODO: Remove the comment when testing is finished
 //            // lastIndex++;
 //            currentDoc = htmlsc.next();
-//            currentDoc = htmlsc.next();
-//            currentDoc = htmlsc.next();
-//            currentDoc = htmlsc.next();
-//            currentDoc = htmlsc.next();
-////            Document doc = Jsoup.connect("http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm").get();
-////            Document doc = Jsoup.parse();
-//
-////            System.out.println(doc.body().text());
-////            DocumentProcessor.process("http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm",currPopularity);
+//            DocumentProcessor.process(currentDoc,0);
 ////            DocumentProcessor.process("https://www.playframework.com/",currPopularity);
 //
 //        }
