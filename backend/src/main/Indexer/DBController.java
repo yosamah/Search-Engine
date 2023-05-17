@@ -124,7 +124,7 @@ public class DBController {
         newWord.append("url", SiteURL).append("placesOfOccurrence", placesOfOccurrence)
                 .append("noOfOccurrences", 1).append("termFrequency", 0)
                 .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs).append("popularity",populariy).append("IDF",0)
-                .append("title",title);
+                .append("title",title).append("score",0);
 
         List <Document> details= (List<Document>) root.get("details");
         details.add(newWord);
@@ -150,7 +150,7 @@ public class DBController {
         Document newWord=  new Document("url", SiteURL).append("original",word.get("original")).append("placesOfOccurrence", placesOfOccurrence)
                 .append("noOfOccurrences", noOfOcrrences).append("termFrequency", 0)
                 .append("relevance", 0).append("isSpam", false).append("paragraphs", paragraphs).append("popularity",word.get("popularity")).append("IDF",0)
-                .append("title",word.get("title"));
+                .append("title",word.get("title")).append("score",0);
         List<Document> details = (List<Document>)root.get("details");
 
 
@@ -265,7 +265,7 @@ public class DBController {
         Document newWord=  new Document("url", SiteURL).append("original",wordSite.get("original")).append("placesOfOccurrence", wordSite.get("placesOfOccurrence"))
                 .append("noOfOccurrences", noOfOcrrences).append("termFrequency", TF)
                 .append("relevance", 0).append("isSpam", isSpam).append("paragraphs", wordSite.get("paragraphs")).append("popularity",wordSite.get("popularity")).append("IDF",0)
-                .append("title",wordSite.get("title"));
+                .append("title",wordSite.get("title")).append("score",0);
         List<Document> details = (List<Document>)root.get("details");
 
 
