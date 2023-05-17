@@ -10,52 +10,52 @@
       "paragraphs": [
         "I am player from youtube."
       ],
-      "relevance": 100,
-      "popularity": 5,
-      "termFrequency": 1,
-      "score": 4,
+      "relevance": 2.1,
+      "popularity": 5.1,
+      "termFrequency": 1.1,
+      "score": 4.1,
       "title": "play-youtube",
-      "idf": 15
+      "IDF": 2.1
     },
     {
-      "original": "playing",
+      "original": "plays",
       "url": "www.google.com",
-      "relevance": 5,
-      "popularity": 10,
-      "termFrequency": 3,
-      "score": 7,
+      "relevance": 1.245112497836531,
+      "popularity": 10.1,
+      "termFrequency": 3.1,
+      "score": 7.1,
       "title": "plays-google",
       "paragraphs": [
         "plays plays",
-        "plays football",
+        "plays football game",
         "he plays a game."
       ],
-      "idf": 10
+      "IDF": 0.4150374992788437
     },
     {
       "original": "playing",
       "url": "www.youtube.com",
-      "relevance": 500,
-      "popularity": 5,
-      "termFrequency": 1,
-      "score": 5,
+      "relevance": 0.4150374992788437,
+      "popularity": 5.1,
+      "termFrequency": 1.1,
+      "score": 5.1,
       "paragraphs": [
         "I am playing from youtube."
       ],
-      "idf": 25
+      "IDF": 0.4150374992788437
     },
     {
       "original": "playing",
       "url": "www.google.com",
-      "relevance": 1,
-      "popularity": 10,
-      "termFrequency": 2,
-      "score": 5,
+      "relevance": 0.8300749985576874,
+      "popularity": 10.1,
+      "termFrequency": 2.1,
+      "score": 5.1,
       "paragraphs": [
         "playing google",
         "I am playing from google."
       ],
-      "idf": 60
+      "IDF": 0.4150374992788437
     }
   ]
 },{
@@ -70,25 +70,25 @@
       "paragraphs": [
         "I am game from youtube."
       ],
-      "relevance": 3,
-      "popularity": 5,
-      "termFrequency": 1,
-      "score": 4,
-      "idf": 7
+      "relevance": 2.1,
+      "popularity": 5.1,
+      "termFrequency": 1.1,
+      "score": 4.1,
+      "IDF": 2.1
     },
     {
-      "original": "games",
+      "original": "game",
       "url": "www.google.com",
       "data": [
         "games games",
         "games football",
         "he games a game."
       ],
-      "relevance": 5,
-      "popularity": 10,
-      "termFrequency": 3,
-      "score": 7,
-      "idf": 8
+      "relevance": 6.1,
+      "popularity": 10.1,
+      "termFrequency": 3.1,
+      "score": 7.1,
+      "IDF": 2.1
     },
     {
       "original": "gaming",
@@ -96,11 +96,11 @@
       "data": [
         "I am playing from youtube."
       ],
-      "relevance": 6,
-      "popularity": 5,
-      "termFrequency": 1,
-      "score": 5,
-      "idf": 19
+      "relevance": 1.1,
+      "popularity": 5.1,
+      "termFrequency": 1.1,
+      "score": 5.1,
+      "IDF": 1.1
     },
     {
       "original": "gaming",
@@ -109,11 +109,11 @@
         "playing gaming",
         "I am gaming from google."
       ],
-      "relevance": 1,
-      "popularity": 10,
-      "termFrequency": 3,
-      "score": 5,
-      "idf": 27
+      "relevance": 3.11,
+      "popularity": 10.1,
+      "termFrequency": 3.1,
+      "score": 5.1,
+      "IDF": 1.1
     },
     {
       "original": "game",
@@ -122,11 +122,30 @@
         "game google",
         "I am game from google."
       ],
-      "relevance": 1,
-      "popularity": 10,
-      "termFrequency": 3,
-      "score": 5,
-      "idf": 80
+      "relevance": 6.1,
+      "popularity": 10.1,
+      "termFrequency": 3.1,
+      "score": 5.1,
+      "IDF": 2.1
+    }
+  ]
+},{
+  "_id": {
+    "$oid": "6464efe94463a45f118277f4"
+  },
+  "root": "footbal",
+  "details": [
+    {
+      "original": "football",
+      "url": "www.google.com",
+      "paragraphs": [
+        "I am game from youtube."
+      ],
+      "relevance": 2.1,
+      "popularity": 5.1,
+      "termFrequency": 1.1,
+      "score": 10.1,
+      "IDF": 2.1
     }
   ]
 }]

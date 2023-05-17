@@ -65,6 +65,7 @@ public class UtilityService {
 
     List<String> removeStopWords(String searchedWord){
         // make all words lowercase and remove stop words
+        searchedWord = searchedWord.replaceAll("[^a-zA-Z0-9]", "");
         List<String> words = List.of(searchedWord.toLowerCase().split("\\s+"));
         List<String> processedWords = new ArrayList<>();
         

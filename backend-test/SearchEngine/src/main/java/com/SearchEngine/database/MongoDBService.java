@@ -2,8 +2,6 @@ package com.SearchEngine.database;
 
 import com.SearchEngine.UtilityService;
 import com.mongodb.client.MongoCollection;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -302,10 +300,10 @@ public class MongoDBService {
             List<WordsCountEntity> words = this.getAllCountOFWords();
             Integer numberOfWebsites = this.getWebsitesCount();
 
-            for(WordsCountEntity word: words){
-                // compute the IDF of each word
+            // compute the IDF of each word
+            for(WordsCountEntity word: words)
                 this.setIdfForOriginalWord(word.getOriginal(), (Math.log((double)numberOfWebsites/word.getCount()) / Math.log(2)));
-            }
+
 
             // compute the relevance of each word
             this.updateRelevance();
@@ -316,4 +314,83 @@ public class MongoDBService {
 
         return true;        // success
     }
+
+    public List<ScoresEntity> getScoreOfMultipleData(List<List<String>> matchingConditionsArray){
+
+        List<Criteria> criteriaList = new ArrayList<>();
+
+        for (List<String> inputArray : matchingConditionsArray) {
+            String url = inputArray.get(0);
+            String original = inputArray.get(1);
+            String root = inputArray.get(2);
+
+            Criteria criteria = Criteria.where("details")
+                    .elemMatch(Criteria.where("url").is(url).and("original").is(original))
+                    .and("root").is(root);
+
+            criteriaList.add(criteria);
+        }
+
+        Criteria matchCriteria = new Criteria().orOperator(criteriaList.toArray(new Criteria[0]));
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(matchCriteria),
+                Aggregation.project("details.score", "details.url", "root").andExclude("_id")
+        );
+
+        AggregationResults<ScoresEntity> results = mongoTemplate.aggregate(aggregation, "words", ScoresEntity.class);
+        return results.getMappedResults();
+
+
+    }
+
+
+    public Double getScore(String root, String original, String url) {
+        // Create a query to match the documents
+        Query query = new Query();
+        query.addCriteria(Criteria.where("root").is(root));
+
+        // Create a projection to retrieve only the matching relevance
+        ProjectionOperation projection = Aggregation.project("details")
+                .andExclude("_id");
+
+        // Create an unwind operation on the "details" array
+        UnwindOperation unwind = Aggregation.unwind("details");
+
+        // Create a match operation to filter the "details" array elements
+        MatchOperation match = Aggregation.match(
+                Criteria.where("details.original").is(original)
+                        .and("details.url").is(url)
+        );
+
+        // Create a projection to extract the relevance field
+        ProjectionOperation relevanceProjection = Aggregation.project("details.score");
+
+        // Execute the aggregation pipeline
+        Aggregation aggregation = Aggregation.newAggregation(
+                projection,
+                unwind,
+                match,
+                relevanceProjection
+        );
+
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "words", Document.class);
+        List<Document> mappedResults = results.getMappedResults();
+
+        // Extract the relevance values from the mapped results
+        List<Double> relevanceList = new ArrayList<>();
+        for (Document document : mappedResults) {
+            Double relevance = document.getDouble("score");
+            relevanceList.add(relevance);
+        }
+
+        if (relevanceList.size()==0)
+            return 0.0;
+        return relevanceList.get(0);
+    }
+
+
+
+
+
 }
