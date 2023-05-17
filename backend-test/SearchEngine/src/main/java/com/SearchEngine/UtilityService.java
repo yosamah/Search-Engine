@@ -67,6 +67,8 @@ public class UtilityService {
         // make all words lowercase and remove stop words
         List<String> words = List.of(searchedWord.toLowerCase().split("\\s+"));
         List<String> processedWords = new ArrayList<>();
+        
+        // O(n^2) complexity but small (words < 10 and stopWords ~= 150) 
         for(String word: words)
             if(!stopWords.contains(word))
                 processedWords.add(word);
