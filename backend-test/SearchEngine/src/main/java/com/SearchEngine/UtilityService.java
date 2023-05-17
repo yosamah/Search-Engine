@@ -29,23 +29,28 @@ public class UtilityService {
                 "will", "just", "don't", "should", "now"));
     }
 
-    public double[] computePopularity(double[][] A, double[] x) {
-        double d = 2.0;
-        RealMatrix matrixA = new Array2DRowRealMatrix(A);
-        RealMatrix resultOld = new Array2DRowRealMatrix(x);
+    public double[] computePopularity(double[][] TransitionMatrix, double[] initialPopularityWeights) {
+        
+        double convergenceThreshold = 0.1;
+        double differenceMagnitude = 2.0;
+        RealMatrix matrixA = new Array2DRowRealMatrix(TransitionMatrix);
+        RealMatrix resultOld = new Array2DRowRealMatrix(initialPopularityWeights);
         RealMatrix resultNew = matrixA.multiply(resultOld);
         double[] matrixDifference;
         int counter = 0;
-        while (d > 0.1) {
+
+        // rule: popularity_new = transition matrix * popularity_old
+        // repeat until convergence
+        while (differenceMagnitude > convergenceThreshold) {
             resultOld = resultNew;
             resultNew = matrixA.multiply(resultOld);
             matrixDifference = resultOld.subtract(resultNew).getColumn(0);
-            d = dotProduct(matrixDifference, matrixDifference);
+            differenceMagnitude = dotProduct(matrixDifference, matrixDifference);       // magnitude of difference vector
             counter++;
-            if (counter > 1000)
+            if (counter > 1000)     // if it takes more than 1000 iterations to converge, break
                 break;
         }
-        System.out.println(counter);
+        System.out.println(counter);        // number of iterations to converge
         return resultNew.getColumn(0);
     }
 
@@ -59,6 +64,7 @@ public class UtilityService {
     }
 
     List<String> removeStopWords(String searchedWord){
+        // make all words lowercase and remove stop words
         List<String> words = List.of(searchedWord.toLowerCase().split("\\s+"));
         List<String> processedWords = new ArrayList<>();
         for(String word: words)

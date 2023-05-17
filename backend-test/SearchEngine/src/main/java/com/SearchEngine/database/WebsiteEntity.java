@@ -13,9 +13,9 @@ import java.util.List;
 public class WebsiteEntity {
 
     private String id;
-    private String url;
-    private Double popularity;
-    private List<String> outgoing_links;
+    private String url;                     // The url of the page
+    private Double popularity;              // The popularity of the page
+    private List<String> outgoing_links;    // The outgoing links of the page (other links it points to)
 
     // Constructors
 

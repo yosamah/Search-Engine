@@ -39,7 +39,7 @@ public class MongoDBService {
     }
 
     public void updateScore(Double popularityPercentage, Double relevancePercentage) {
-        // Access the database and collection
+        // updates the score of all words and urls in the database
         for (Document document : wordsDocuments) {
             List<Document> details = (List<Document>) document.get("details");
             List<Document> updatedDetails = new ArrayList<>();
@@ -48,6 +48,7 @@ public class MongoDBService {
                 int relevance = detail.getInteger("relevance");
                 int popularity = detail.getInteger("popularity");
                 double score = (relevance * popularityPercentage + popularity * relevancePercentage);
+                // score is a linear combination of popularity and relevance
 
                 Document updatedDetail = new Document(detail)
                         .append("score", (int) score);
@@ -61,7 +62,7 @@ public class MongoDBService {
     }
 
     public void updateRelevance() {
-        // Access the database and collection
+        // updates the relevance of all words and urls in the database
         for (Document document : wordsDocuments) {
             List<Document> details = (List<Document>) document.get("details");
             List<Document> updatedDetails = new ArrayList<>();
@@ -70,6 +71,7 @@ public class MongoDBService {
                 double idf = detail.getDouble("IDF");
                 double termFrequency = detail.getDouble("termFrequency");
                 double relevance = idf*termFrequency;
+                // relevance is the product of IDF and term frequency
 
                 Document updatedDetail = new Document(detail)
                         .append("relevance",  relevance);
@@ -81,9 +83,11 @@ public class MongoDBService {
             wordsCollection.replaceOne(new Document("_id", document.get("_id")), document);
         }
     }
+
     public void updatePopularity(String url, Double popularity) {
-        // Build the query to match documents with the provided URL
+        // update the popularity of the given URL (in all words)
         Query query = new Query();
+        // match documents with the provided URL
         query.addCriteria(Criteria.where("details.url").is(url));
 
         // Build the update to set the popularity field in the matched elements of the details array
@@ -95,7 +99,7 @@ public class MongoDBService {
     }
 
     public void updateWebsitePopularity(String url, Double newPopularity) {
-        // Build the query to match documents with the provided URL
+        // updates the popularity of a certain website in the websites collection
         Query query = new Query(Criteria.where("url").is(url));
         Update update = new Update().set("popularity", newPopularity);
         mongoTemplate.updateFirst(query, update, WebsiteEntity.class, "websites");
@@ -103,6 +107,7 @@ public class MongoDBService {
     }
 
     public void updateRelevance(String root, String original, String url, int relevance) {
+        // updates relevance of a certain word and url in the database (no longer needed)
         // Create a query to match the documents
         Query query = new Query();
         query.addCriteria(Criteria.where("root").is(root));
@@ -120,6 +125,9 @@ public class MongoDBService {
     }
 
     public List<MongoDbEntity> searchByExactWord(String rootWord, String originalWord, int limitElements) {
+        // search for an exact (original) word in the database and returns 
+        // its links sorted descendingly according to their score
+        
         // Match stage to filter documents by root field
         MatchOperation matchRoot = Aggregation.match(Criteria.where("root").is(rootWord));
 
@@ -141,6 +149,8 @@ public class MongoDBService {
     }
 
     public List<MongoDbEntity> searchByRootWord(String rootWord, int limitElements) {
+        // search for a word by its root in the database and returns 
+        // its links sorted descendingly according to their score
 
         // Match stage to filter documents by root field
         MatchOperation matchRoot = Aggregation.match(Criteria.where("root").is(rootWord));
@@ -160,49 +170,83 @@ public class MongoDBService {
     }
 
     public List<WebsiteEntity> getAllWebsites() {
+        // returns the Websites collection
         return mongoTemplate.findAll(WebsiteEntity.class, "websites");
     }
 
     public List<MongoDbEntity> getAllWords() {
+        // returns the Words collection
         return mongoTemplate.findAll(MongoDbEntity.class, "words");
     }
 
 
     public boolean computeAllSitesPopularity() {
+        // computes the popularity of all websites in the database
         try {
-            List<WebsiteEntity> allWebsites = this.getAllWebsites();
-            int numberOfWebsites = allWebsites.size();
-            Map<Integer, String> mappingLocalIdsToWebsites = new HashMap<>();
-            Map<String, Integer> mappingWebsitesToLocalIds = new HashMap<>();
-            int currentId = 0;
+            List<WebsiteEntity> allWebsites = this.getAllWebsites();        // getting all websites
+            int numberOfWebsites = allWebsites.size();                      // number of websites
+            Map<Integer, String> mappingLocalIdsToWebsites = new HashMap<>();       // mapping local ids to websites
+            // we need this map so as to know which site corresponds to which index in the transition matrix
+            // this will be used when writing to the DB
+            Map<String, Integer> mappingWebsitesToLocalIds = new HashMap<>();       // mapping websites to local ids
+            // we need this map so as to maintain the order of websites in the transition matrix
+            // this will be used when computing the popularity
+            
+            int currentId = 0;      // 0 indexing
             for (WebsiteEntity website : allWebsites) {
+                // buliding the hashmaps
                 mappingLocalIdsToWebsites.put(currentId, website.getUrl());
                 mappingWebsitesToLocalIds.put(website.getUrl(), currentId);
                 currentId++;
             }
 
-            currentId = 0;
+            currentId = 0;      // reseting the current id
             double[][] transitionMatrix = new double[numberOfWebsites][numberOfWebsites];
+            // transition matrix is a square matrix of size (number of websites) x (number of websites)
+            // number of websites should be 6000
 
+            // each column represents a website
+            // and each row represents a link from a the column website to the row website
+            // e.g, having three websites A, B, C
+            // and A has a link to B and C
+            // and B has a link to C
+            // and C has a link to A
+            // then the transition matrix will be
+            //    A    B   C
+            // A  0    0   1
+            // B  0.5  0   0
+            // C  0.5  1   0
+            
             for (WebsiteEntity website : allWebsites) {
                 for (String url : website.getOutgoing_links()) {
+                    // filling the column of the current website
                     transitionMatrix[mappingWebsitesToLocalIds.get(url)][currentId] = (1.0 / website.getOutgoing_links().size());
+                    // website has a connection to the url, so fill the column of the website with
+                    // 1 / number of outgoing links in each url row
+                    
                 }
-                currentId++;
+                currentId++;        // increase the id counter to get the next website
             }
+            
             double[] popularityInitialization = new double[numberOfWebsites];
+            // initially, set the popularity of each website to 1 / total number of websites
+            // should be 1 / 6000
             for (int i = 0; i < numberOfWebsites; ++i)
                 popularityInitialization[i] = (1.0 / numberOfWebsites);
 
+            // compute the popularity of each website
             double[] computedPopularity = this.utilityService.computePopularity(transitionMatrix, popularityInitialization);
+
+            // update the popularity of each website in the database
             for (int i = 0; i < numberOfWebsites; ++i) {
                 this.updateWebsitePopularity(mappingLocalIdsToWebsites.get(i), computedPopularity[i]);
+                // looping on the ids and updating the popularity of each website
             }
 
         } catch (Exception e) {
-            return false;
+            return false;    // failure
         }
-        return true;
+        return true;        // success
     }
 
     public List<MongoDbEntity> getAllWordsUnWindDetails() {
@@ -215,25 +259,28 @@ public class MongoDBService {
     }
 
     public List<WordsCountEntity> getAllCountOFWords() {
+        // get every word and its count
         AggregationOperation unwind = Aggregation.unwind("details");
         AggregationOperation group = Aggregation.group("details.original").count().as("count");
         AggregationOperation project = Aggregation.project("count").and("_id").as("original");
         Aggregation aggregation = Aggregation.newAggregation(unwind, group, project);
 
-// Execute the aggregation query
+        // Execute the aggregation query
         AggregationResults<WordsCountEntity> results = mongoTemplate.aggregate(aggregation, "words", WordsCountEntity.class);
 
-// Get the list of matched words and their counts
+        // Get the list of matched words and their counts
         return results.getMappedResults();
     }
 
 
     public Integer getWebsitesCount() {
+        // returns the number of websites in the database
         return Math.toIntExact(mongoTemplate.count(new Query(), "websites"));
     }
 
     public void setIdfForOriginalWord(String originalWord, double idf) {
-
+        // Set the IDF of the original (exact) word for all urls
+        // IDF is independent of the url, so we set it for all urls
         Query query = new Query();
 
         // Create an update operation to set the relevance field
@@ -250,19 +297,23 @@ public class MongoDBService {
     }
 
     public boolean computeAllWordsRelevance() {
+        // computes the relevance of all words in the database
         try {
             List<WordsCountEntity> words = this.getAllCountOFWords();
             Integer numberOfWebsites = this.getWebsitesCount();
 
             for(WordsCountEntity word: words){
+                // compute the IDF of each word
                 this.setIdfForOriginalWord(word.getOriginal(), (Math.log((double)numberOfWebsites/word.getCount()) / Math.log(2)));
             }
+
+            // compute the relevance of each word
             this.updateRelevance();
 
         } catch (Exception e) {
-            return false;
+            return false;   // failure
         }
 
-        return true;
+        return true;        // success
     }
 }

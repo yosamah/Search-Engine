@@ -26,6 +26,7 @@ public class StemmerService {
     }
 
     public String stem(String word) {
+        // getting the root of the word
         stemmer.setCurrent(word);
         stemmer.stem();
         return stemmer.getCurrent();

@@ -17,14 +17,14 @@ public class MongoDbEntity {
     @Getter
     @Setter
     public static class Details {
-        private String original;
-        private String url;
-        private List<String> paragraphs;
-        private int relevance;
-        private int popularity;
-        private int termFrequency;
-        private int score;
-        private String title;
+        private String original;            // The original word without stemming
+        private String url;                 // The url of the page
+        private List<String> paragraphs;    // The paragraphs in which the word appeared
+        private int relevance;              // The relevance of the page
+        private int popularity;             // The popularity of the page
+        private int termFrequency;          // The term frequency of the word in the page (normalized)
+        private int score;                  // The score of the page (a linear combination of popularity and relevance)
+        private String title;               // The title of the page
 
         // Getters and setters
     }
