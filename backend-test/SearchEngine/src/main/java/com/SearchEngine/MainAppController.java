@@ -22,8 +22,7 @@ public class MainAppController {
     }
 
     @GetMapping("/search")
-    List<WordsEntity> search(@RequestParam String searchedWord,
-                             @RequestParam int pageNum){
-        return this.mainAppService.search(searchedWord, pageNum);
+    List<WordsEntity> search(@RequestParam String searchedWord){
+        return this.mainAppService.search(searchedWord);
     }
 }
