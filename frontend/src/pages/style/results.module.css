@@ -1,0 +1,45 @@
+.main
+{
+   
+    min-height: 100vh;
+    height: auto;
+    background-color: #ffffff;
+    background-size: cover;
+    background-position: center;
+    padding-top: 8vh;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+
+}
+
+.resultsArea
+{
+    flex: 1;
+}
+.resultsArea h1{
+    font-size: 3rem;
+    font-weight: 300;
+    color: #444;
+    margin-bottom: 1rem;
+}
+.googleLogo
+{
+    width: 20rem;
+    margin-bottom: 2rem;
+    margin-left: 4rem;
+}
+.results
+{
+    margin-left: 4rem;
+    margin-bottom: 3rem;
+}
+.resultsText{
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.9rem;
+    margin-left: 6rem;
+}
+
+

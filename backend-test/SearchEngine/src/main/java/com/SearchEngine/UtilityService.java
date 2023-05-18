@@ -75,4 +75,30 @@ public class UtilityService {
                 processedWords.add(word);
         return processedWords;
     }
+
+    public String wrapWordsWithTag(String input, List<String> wrappedWords, String tag) {
+        StringBuilder output = new StringBuilder();
+        String openingTag = "<" + tag + ">";
+        String closingTag = "</" + tag + ">";
+
+        String[] words = input.split(" ");
+        for (String word : words) {
+            if (containsWord(wrappedWords, word)) {
+                output.append(openingTag).append(word).append(closingTag).append(" ");
+            } else {
+                output.append(word).append(" ");
+            }
+        }
+
+        return output.toString().trim();
+    }
+    private boolean containsWord(List<String> words, String targetWord) {
+        for (String word : words) {
+            if (word.equalsIgnoreCase(targetWord)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

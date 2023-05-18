@@ -26,7 +26,7 @@ public class WordsEntity {
         private double termFrequency;          // The term frequency of the word in the page (normalized)
         private double score;                  // The score of the page (a linear combination of popularity and relevance)
         private String title;               // The title of the page
-
+        private String content;
         // Getters and setters
     }
 

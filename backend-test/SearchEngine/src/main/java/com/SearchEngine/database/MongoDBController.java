@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/database")
 public class MongoDBController {
 
@@ -64,5 +65,15 @@ public class MongoDBController {
     @GetMapping("/get-count-all-words")
     List<WordsCountEntity> getAllCountOfAllWords() {
         return this.mongoDBService.getAllCountOFWords();
+    }
+
+    @PostMapping("/create-query")
+    void createQuery(@RequestParam String query){
+        this.mongoDBService.createQuery(query);
+    }
+
+    @GetMapping("/get-query")
+    List<String> getQueries(@RequestParam String query){
+        return this.mongoDBService.searchQuery(query);
     }
 }

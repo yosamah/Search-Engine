@@ -2,6 +2,7 @@ package com.SearchEngine.database;
 
 import com.SearchEngine.UtilityService;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MongoDBService {
@@ -100,7 +102,7 @@ public class MongoDBService {
         // updates the popularity of a certain website in the websites collection
         Query query = new Query(Criteria.where("url").is(url));
         Update update = new Update().set("popularity", newPopularity);
-        mongoTemplate.updateFirst(query, update, WebsiteEntity.class, "websites");
+        mongoTemplate.updateFirst(query, update, WebsiteEntity.class, "pages");
 
     }
 
@@ -169,7 +171,7 @@ public class MongoDBService {
 
     public List<WebsiteEntity> getAllWebsites() {
         // returns the Websites collection
-        return mongoTemplate.findAll(WebsiteEntity.class, "websites");
+        return mongoTemplate.findAll(WebsiteEntity.class, "pages");
     }
 
     public List<WordsEntity> getAllWords() {
@@ -180,6 +182,7 @@ public class MongoDBService {
 
     public boolean computeAllSitesPopularity() {
         // computes the popularity of all websites in the database
+        int currentId = 0;
         try {
             List<WebsiteEntity> allWebsites = this.getAllWebsites();        // getting all websites
             int numberOfWebsites = allWebsites.size();                      // number of websites
@@ -190,7 +193,7 @@ public class MongoDBService {
             // we need this map so as to maintain the order of websites in the transition matrix
             // this will be used when computing the popularity
 
-            int currentId = 0;      // 0 indexing
+                  // 0 indexing
             for (WebsiteEntity website : allWebsites) {
                 // buliding the hashmaps
                 mappingLocalIdsToWebsites.put(currentId, website.getUrl());
@@ -216,9 +219,11 @@ public class MongoDBService {
             // C  0.5  1   0
 
             for (WebsiteEntity website : allWebsites) {
-                for (String url : website.getOutgoing_links()) {
+                for (String url : website.getOutgoingLinks()) {
                     // filling the column of the current website
-                    transitionMatrix[mappingWebsitesToLocalIds.get(url)][currentId] = (1.0 / website.getOutgoing_links().size());
+                    if(mappingWebsitesToLocalIds.containsKey(url))
+                        transitionMatrix[mappingWebsitesToLocalIds.get(url)][currentId] = (1.0 / website.getOutgoingLinks().size());
+
                     // website has a connection to the url, so fill the column of the website with
                     // 1 / number of outgoing links in each url row
 
@@ -242,6 +247,7 @@ public class MongoDBService {
             }
 
         } catch (Exception e) {
+            System.out.println(e);
             return false;    // failure
         }
         return true;        // success
@@ -273,7 +279,7 @@ public class MongoDBService {
 
     public Integer getWebsitesCount() {
         // returns the number of websites in the database
-        return Math.toIntExact(mongoTemplate.count(new Query(), "websites"));
+        return Math.toIntExact(mongoTemplate.count(new Query(), "pages"));
     }
 
     public void setIdfForOriginalWord(String originalWord, double idf) {
@@ -389,5 +395,42 @@ public class MongoDBService {
         return relevanceList.get(0);
     }
 
+    public MongoCollection<Document> createOrGetCollection(String collectionName) {
+        if (!mongoTemplate.collectionExists(collectionName)) {
+            mongoTemplate.createCollection(collectionName);
+        }
+        return mongoTemplate.getCollection(collectionName);
+    }
 
+    public List<String> searchQuery(String searchText) {
+        // Create a query with regex pattern for case-insensitive partial matching
+        Criteria criteria = Criteria.where("query").regex("(?i).*" + searchText + ".*");
+        Query query = Query.query(criteria);
+
+        // Execute the query and retrieve matching documents as a list
+        List<Document> documents = mongoTemplate.find(query, Document.class, "queries");
+
+        // Extract the "query" field from each document into a list of strings
+        return documents.stream()
+                .map(document -> document.getString("query"))
+                .collect(Collectors.toList());
+
+    }
+
+    public void createQuery(String queryText){
+        MongoCollection<Document> queryCollection  =this.createOrGetCollection("queries");
+
+        Document existingQuery = queryCollection.find(Filters.eq("query", queryText)).first();
+        if (existingQuery != null) {
+            // Query already exists, skip insertion
+            return;
+        }
+
+        // Create the new query document
+        Document newQuery = new Document("query", queryText);
+
+        // Insert the new query document
+        queryCollection.insertOne(newQuery);
+
+    }
 }

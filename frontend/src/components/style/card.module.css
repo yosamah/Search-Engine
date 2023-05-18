@@ -1,0 +1,31 @@
+.searchcard {
+  padding: 1.6rem;
+  margin-bottom: 3rem;
+  margin-left: 8rem;
+  /* width: 50%; */
+  margin-right: 30rem;
+  background: linear-gradient(197deg,rgb(3 87 210 / 16%) 0.34%,#f9f9f9 31.95%);
+  border-radius: 20px;
+  box-shadow: 0 0 41px #4285f43d;
+  }
+  
+  .searchcardtitle {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin-block: 0.9rem;
+  }
+  
+  .searchcardurl {
+    font-size: 20px;
+    color: #1a0daba8;
+    margin-bottom: 8px;
+  }
+  
+  .searchcardcontent {
+    font-size: 16px;
+    font-weight: 300;
+    padding-top: 1rem;
+    color: #444444b3;
+  }
+  
