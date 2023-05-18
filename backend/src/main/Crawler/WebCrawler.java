@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
@@ -20,7 +21,6 @@ public class WebCrawler implements Runnable {
     public static ConcurrentHashMap<String, Boolean> visitedUrls;
     public static ConcurrentHashMap<String, Boolean> urlsToCrawl;
     public static ConcurrentHashMap<String, String> compactStringOfPages;
-    int counter = 0;
   
     public static DBController controller;
 
@@ -28,10 +28,10 @@ public class WebCrawler implements Runnable {
     public void run() {
         langDetector = new OptimaizeLangDetector(); // Create language detector instance
         langDetector.loadModels(); // Load language detection models
-        // get the thread number
-        int threadNum = Integer.parseInt(Thread.currentThread().getName());
+        //Gets the thread number
+        //int threadNum = Integer.parseInt(Thread.currentThread().getName());
         // get the start and end index for the current thread
-        System.out.println("Thread " + threadNum + "is currently running");
+        //System.out.println("Thread " + threadNum + " is currently running");
 
         try {
             crawlWebPage(seedList, visitedUrls, urlsToCrawl, compactStringOfPages);
@@ -50,10 +50,13 @@ public class WebCrawler implements Runnable {
                                     ConcurrentHashMap<String, Boolean> urlsToCrawl,
                                     ConcurrentHashMap<String,String> compactStringOfPages) throws IOException, URISyntaxException {
         String url = null;
-        while (!seedList.isEmpty()) {
+        while (true) {
             synchronized (seedList) {
-                if (seedList.size() > 0)
+                if (!seedList.isEmpty()) {
                     url = seedList.remove(0);
+                } else {
+                    break; // Exit the loop if the list is empty
+                }
             }
             try {
                 //if interrupted, be started again to crawl the documents on the list without revisiting documents that have been previously downloaded.
@@ -64,7 +67,6 @@ public class WebCrawler implements Runnable {
                         System.out.println(Thread.currentThread().getName() + "-> Disallowed by robots.txt: " + url);
                         //Adds url to visitedUrls
                         visitedUrls.put(url, true);
-                        //controller.createNewPageWithoutFilePath(url);
                         continue;
                     }
                     //create a document object
@@ -75,14 +77,12 @@ public class WebCrawler implements Runnable {
                             System.out.println(Thread.currentThread().getName() + ": Error while crawling page: " + url);
                             //Adds url to visitedUrls
                             visitedUrls.put(url, true);
-                            //controller.createNewPageWithoutFilePath(url);
                             continue;
                         }
                         catch (Exception e) {
                             System.out.println(Thread.currentThread().getName() + ": Malformed URL: " + url);
                             //Adds url to visitedUrls
                             visitedUrls.put(url, true);
-                            //controller.createNewPageWithoutFilePath(url);
                             continue;
                         }
                     //chack doc html lang attribute with jsoup and if not english, skip
@@ -90,27 +90,25 @@ public class WebCrawler implements Runnable {
                         System.out.println(Thread.currentThread().getName() + "-> Non-english page: " + url);
                         //Adds url to visitedUrls
                         visitedUrls.put(url, true);
-                        //controller.createNewPageWithoutFilePath(url);
                         continue;
                     }
                     String compactString = UrlManager.compactString(doc.body().text());
                     //checks if compact String is already in database
                     if (compactStringOfPages != null && compactStringOfPages.containsKey(compactString)) {
-                        //Adds url to visitedUrls
-                        //visitedUrls.put(url, true);
-                        //controller.createNewPageWithoutFilePath(url);
                         System.out.println(Thread.currentThread().getName() + "-> Compact String exists: " + url);
                         continue;
                     }
+                    Random random = new Random();
+                    int randomNumber = random.nextInt();
                     String currentDirectory = System.getProperty("user.dir");
-                    String fileName = counter + Thread.currentThread().getName();
+                    String fileName = visitedUrls.size() + + randomNumber + Thread.currentThread().getName();
                     String filePath = "\\HTMLdocs\\" + fileName + ".html";
-                    counter++;
                     File HTMLFile = new File(currentDirectory + filePath);
                     HTMLFile.createNewFile();
                     try {
                         FileWriter fw = new FileWriter(HTMLFile);
                         fw.write(doc.html());
+                        controller.createNewCurrentlyCrawlingPage(url, fileName + ".html");
                         fw.close();
                     } catch (IOException e) {
                         System.out.println(Thread.currentThread().getName() + ": Error while writing to file: " + url);
@@ -121,10 +119,12 @@ public class WebCrawler implements Runnable {
                     //Adds url to visitedUrls
                     visitedUrls.put(url, true);
                     controller.createNewPage(url, filePath, compactString);
+                    controller.deleteCurrentlyCrawlingPage(url);
                    
                     //Extracts all hyperlinks from Document
                     Elements hyperlinks = doc.select("a[href]");
                     System.out.println( Thread.currentThread().getName() + ": Found " + hyperlinks.size() + " hyperlinks");
+                    ConcurrentHashMap<String, Boolean> waitingUrls = new ConcurrentHashMap<>();
                     for (Element hl : hyperlinks) {
                         String normalizedUrl = hl.attr("abs:href");
                         try {
@@ -135,15 +135,26 @@ public class WebCrawler implements Runnable {
                                 System.out.println(Thread.currentThread().getName() + ": Malformed URL: " + normalizedUrl);
                                 continue;
                         }
-                        //check if link is not visited
+                        //Checks if link is not visited
                         if (!visitedUrls.containsKey(normalizedUrl)) {
-                            //add link to urls to be crawled if not exists
+                            //Adds link to urls to be crawled if not exists
                             if(!urlsToCrawl.containsKey(normalizedUrl)) {
                                 //System.out.println(Thread.currentThread().getName() + " is adding " + normalizedUrl + " to urls to be crawled");
-                                urlsToCrawl.put(normalizedUrl, true);
-                                controller.createNewFuturePage(normalizedUrl);
+                                if (!waitingUrls.containsKey(normalizedUrl)) {
+                                    urlsToCrawl.put(normalizedUrl, true);
+                                    waitingUrls.put(normalizedUrl, true);
+                                    synchronized (this) {
+                                        controller.appendUrlToOutgoingLinks(url, normalizedUrl);}
+                                }
+                                //Limit the waiting urls to 500
+                                if (waitingUrls.size() == 500) {
+                                    break;
+                                }
                             }
                         }
+                    }
+                    for (String linkUrl : waitingUrls.keySet()) {
+                        controller.createNewFuturePage(linkUrl);
                     }
                     
                 }

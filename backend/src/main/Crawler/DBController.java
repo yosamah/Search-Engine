@@ -15,11 +15,11 @@ import com.mongodb.client.MongoDatabase;
 
 public class DBController {
 
-
     static String DBConnectionString = "mongodb://localhost:27017";
     static MongoDatabase database;
     static MongoCollection<Document> pagesCollection;
     static MongoCollection<Document> futurePagesCollection;
+    static MongoCollection<Document> currentlyCrawlingCollection;
 
     public static void connect() {
 
@@ -27,9 +27,8 @@ public class DBController {
         mongoLogger.setLevel(Level.SEVERE);
         MongoClient mongoClient = MongoClients.create(DBConnectionString);
 
-
         database = mongoClient.getDatabase("SearchEngine");
-        //Creates Collection if it doesn't exist
+        // Creates Collection if it doesn't exist
         try {
             database.createCollection("pages");
             System.out.println("Created pages collection");
@@ -42,21 +41,71 @@ public class DBController {
         } catch (Exception e) {
             System.out.println("futurePages collection already exists");
         }
+        try {
+            database.createCollection("currentlyCrawling");
+            System.out.println("Created currentlyCrawling collection");
+        } catch (Exception e) {
+            System.out.println("currentlyCrawling collection already exists");
+        }
 
         System.out.println("===========================================================");
         pagesCollection = database.getCollection("pages");
         futurePagesCollection = database.getCollection("futurePages");
+        currentlyCrawlingCollection = database.getCollection("currentlyCrawling");
     }
 
-    //Finds a document with a matching URL in any collection
+    // Creates a new page and inserts it into the currentlyCrawling collection
+    public void createNewCurrentlyCrawlingPage(String url, String fileName) {
+        Document newDoc = new Document("url", url);
+        newDoc.put("fileName", fileName);
+        currentlyCrawlingCollection.insertOne(newDoc);
+    }
+
+    // Removes a document from the currentlyCrawling collection
+    public void deleteCurrentlyCrawlingPage(String url) {
+        Document query = new Document("url", url);
+        currentlyCrawlingCollection.deleteOne(query);
+    }
+
+    // Removes a document from the currentlyCrawling collection using the fileName
+    public void deleteCurrentlyCrawlingPageByFileName(String fileName) {
+        Document query = new Document("fileName", fileName);
+        currentlyCrawlingCollection.deleteOne(query);
+    }
+
+    // Retrieve all documents in the currentlyCrawling Collection
+    public MongoCursor<Document> getAllDocuments() {
+        return currentlyCrawlingCollection.find().iterator();
+    }
+
+    // Retrieves all the file names of the currentlyCrawling collection
+    public String[] getAllFileNames() {
+        MongoCursor<Document> cursor = currentlyCrawlingCollection.find().iterator();
+        String[] fileNames = new String[(int) currentlyCrawlingCollection.countDocuments()];
+        int i = 0;
+        while (cursor.hasNext()) {
+            Document document = cursor.next();
+            fileNames[i] = document.getString("fileName");
+            i++;
+        }
+        return fileNames;
+    }
+
+    // Gets the number of urls in the currentlyCrawling collection
+    public Boolean noCurrentlyCrawlingPage() {
+        int number = (int) currentlyCrawlingCollection.countDocuments();
+        return number == 0;
+    }
+
+    // Finds a document with a matching URL in any collection
     public Document getDocumentWithUrl(String urlToMatch, MongoCollection<Document> collection) {
         Document query = new Document("url", urlToMatch);
 
-        //Executes the query and retrieve the matching document
+        // Executes the query and retrieve the matching document
         return collection.find(query).first();
     }
 
-    //Creates a new page and inserts it into the pages collection
+    // Creates a new page and inserts it into the pages collection
     public void createNewPage(String url, String filePath, String compactString) {
         Document newPage = new Document();
         newPage.put("url", url);
@@ -66,32 +115,24 @@ public class DBController {
         newPage.put("popularity", 0);
         newPage.put("outgoingLinks", new BasicDBList());
         pagesCollection.insertOne(newPage);
-        //System.out.println("Inserting new page: " + url + " into the pages collection");
+        // System.out.println("Inserting new page: " + url + " into the pages
+        // collection");
     }
 
-    // //Creates a new page and inserts it into the pages collection
-    // public void createNewPageWithoutFilePath(String url) {
-    //     Document newPage = new Document();
-    //     newPage.put("url", url);
-    //     newPage.put("isIndexed", false);
-    //     newPage.put("popularity", 0);
-    //     newPage.put("outgoingLinks", new BasicDBList());
-    //     pagesCollection.insertOne(newPage);
-    // }
-
-    //Creates a new page and inserts it into the futurePages collection if it doesn't already exist
+    // Creates a new page and inserts it into the futurePages collection
     public void createNewFuturePage(String url) {
         Document newDoc = new Document("url", url);
         futurePagesCollection.insertOne(newDoc);
-        //System.out.println("Inserting new page: " + url + " into the futurePages collection");
+        // System.out.println("Inserting new page: " + url + " into the futurePages
+        // collection");
     }
 
-    //Deletes all the urls in the futurePages collection
+    // Deletes all the urls in the futurePages collection
     public void deleteUrlsToCrawl() {
         futurePagesCollection.deleteMany(new Document());
     }
 
-    //Gets the number of urls in the futurePages collection
+    // Gets the number of urls in the futurePages collection
     public int getNumberofCrawledPages() {
         return (int) pagesCollection.countDocuments();
     }
@@ -107,7 +148,8 @@ public class DBController {
         }
     }
 
-    public void RetrieveCrawledUrls(ConcurrentHashMap<String, Boolean> visitedUrls, ConcurrentHashMap<String, String> compactStringOfPages) {
+    public void RetrieveCrawledUrls(ConcurrentHashMap<String, Boolean> visitedUrls,
+            ConcurrentHashMap<String, String> compactStringOfPages) {
         try (MongoCursor<Document> cursor = pagesCollection.find().iterator()) {
             while (cursor.hasNext()) {
                 Document document = cursor.next();
@@ -124,5 +166,16 @@ public class DBController {
             System.out.println("Error in RetrieveCrawledUrls");
         }
     }
-}
 
+    // Appends a given url to the outgoing links of each page in pages collection
+    public void appendUrlToOutgoingLinks(String baseUrl, String outgoingLink) {
+        Document retrievedPage = getDocumentWithUrl(baseUrl, pagesCollection);
+
+        // Define the update operation using $push
+        Document update = new Document("$push", new Document("outgoingLinks", outgoingLink));
+
+        // Perform the update
+        pagesCollection.updateOne(retrievedPage, update);
+    }
+
+}
