@@ -6,11 +6,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CrawlerMain {
     static int maxNumOfCrawledUrls = 6000;
-    static int totalNumofThreads = 20;
+    // static int totalNumofThreads = 20;
 
     public static void main(String[] args) {
         ConcurrentHashMap<String, Boolean> visitedUrls = new ConcurrentHashMap<>();
@@ -18,8 +19,8 @@ public class CrawlerMain {
         ConcurrentHashMap<String, Boolean> urlsToCrawl = new ConcurrentHashMap<>();
         ConcurrentHashMap<String, String> compactStringOfPages = new ConcurrentHashMap<>();
 
-        DBController controller = new DBController();
-        DBController.connect();
+        CrawlerController controller = new CrawlerController();
+        CrawlerController.connect();
         // Loads visitedUrls and compactStringOfPages from database --------
         controller.RetrieveCrawledUrls(visitedUrls, compactStringOfPages);
         // Loads urlsToCrawl from database --------
@@ -28,6 +29,12 @@ public class CrawlerMain {
         int numOfCrawledPages = controller.getNumberofCrawledPages();
         // Prints the number of crawled pages
         System.out.println("Number of crawled pages = " + numOfCrawledPages);
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter your the number of threads: ");
+        int totalNumofThreads = scanner.nextInt();
+
         List<String> seedList = new ArrayList<>();
 
         String currentDirectory = System.getProperty("user.dir");
@@ -44,7 +51,7 @@ public class CrawlerMain {
             e.printStackTrace();
         }
 
-        if (urlsToCrawl.size() == 0) {       // if cold start, load the seedList
+        if (urlsToCrawl.size() == 0) { // if cold start, load the seedList
             for (String url : seedList) {
                 urlsToCrawl.put(url, true);
             }
@@ -82,30 +89,29 @@ public class CrawlerMain {
             urlsToCrawl.clear();
             controller.deleteUrlsToCrawl();
             System.out.println("Let's begin crawling...");
-            WebCrawler.numThreads = totalNumofThreads;
             WebCrawler.seedList = seedList;
             System.out.println("Remaining: " + remaining + ", urlsToCrawlArray.length: " + seedList.size());
             WebCrawler.numUrls = Math.min(remaining, seedList.size());
-            //System.out.println("Number of URLs: " + WebCrawler.numUrls);
+            // System.out.println("Number of URLs: " + WebCrawler.numUrls);
             WebCrawler.urlsToCrawl = urlsToCrawl;
             WebCrawler.visitedUrls = visitedUrls;
             WebCrawler.compactStringOfPages = compactStringOfPages;
             WebCrawler.controller = controller;
             // Creates number of threads
-            Thread[] threads = new Thread[WebCrawler.numThreads];
+            Thread[] threads = new Thread[totalNumofThreads];
             // Calculate the number of URLs per thread
             // int urlsPerThread = WebCrawler.numUrls / WebCrawler.numThreads;
             // int remainingUrls = WebCrawler.numUrls % WebCrawler.numThreads;
-            for (int i = 0; i < WebCrawler.numThreads; i++) {
+            for (int i = 0; i < totalNumofThreads; i++) {
                 threads[i] = new Thread(new WebCrawler());
                 threads[i].setName(String.valueOf(i));
             }
             // Starts threads
-            for (int i = 0; i < WebCrawler.numThreads; i++) {
+            for (int i = 0; i < totalNumofThreads; i++) {
                 threads[i].start();
             }
             // wait for all threads to finish
-            for (int i = 0; i < WebCrawler.numThreads; i++) {
+            for (int i = 0; i < totalNumofThreads; i++) {
                 try {
                     threads[i].join();
                 } catch (InterruptedException e) {

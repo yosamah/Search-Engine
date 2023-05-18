@@ -13,7 +13,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
-public class DBController {
+public class CrawlerController {
 
     static String DBConnectionString = "mongodb://localhost:27017";
     static MongoDatabase database;

@@ -15,14 +15,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class WebCrawler implements Runnable {
-    public static int numThreads;
     public static int numUrls;
     public static List<String> seedList;
     public static ConcurrentHashMap<String, Boolean> visitedUrls;
     public static ConcurrentHashMap<String, Boolean> urlsToCrawl;
     public static ConcurrentHashMap<String, String> compactStringOfPages;
   
-    public static DBController controller;
+    public static CrawlerController controller;
 
     OptimaizeLangDetector langDetector;
     public void run() {
@@ -101,7 +100,7 @@ public class WebCrawler implements Runnable {
                     Random random = new Random();
                     int randomNumber = random.nextInt();
                     String currentDirectory = System.getProperty("user.dir");
-                    String fileName = visitedUrls.size() + + randomNumber + Thread.currentThread().getName();
+                    String fileName = visitedUrls.size() + String.valueOf(randomNumber) + Thread.currentThread().getName();
                     String filePath = "\\HTMLdocs\\" + fileName + ".html";
                     File HTMLFile = new File(currentDirectory + filePath);
                     HTMLFile.createNewFile();
