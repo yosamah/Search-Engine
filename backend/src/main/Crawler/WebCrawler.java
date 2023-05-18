@@ -98,7 +98,7 @@ public class WebCrawler implements Runnable {
                         continue;
                     }
                     Random random = new Random();
-                    int randomNumber = random.nextInt();
+                    int randomNumber = random.nextInt(1000);
                     String currentDirectory = System.getProperty("user.dir");
                     String fileName = visitedUrls.size() + String.valueOf(randomNumber) + Thread.currentThread().getName();
                     String filePath = "\\HTMLdocs\\" + fileName + ".html";
