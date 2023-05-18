@@ -36,7 +36,7 @@ public class DocumentProcessor {
                 continue;
             }
             TotalNumberofWords+=preprocessedString.length();
-            String [] tokens = Tokenizer.writeTokens(preprocessedString,DocumentURL,element,popularity,title);
+            String [] tokens = Tokenizer.writeTokens(preprocessedString,DocumentURL,popularity,title);
              uniqueWords.addAll(Arrays.asList(tokens));
         }
         //TODO: update Term Frequency and isSpam
@@ -72,12 +72,15 @@ public class DocumentProcessor {
                 continue;
             }
             TotalNumberofWords+=preprocessedString.length();
-            String [] tokens = Tokenizer.writeTokens(preprocessedString,DocumentURL,element,popularity,title);
+            String [] tokens = Tokenizer.writeTokens(preprocessedString,DocumentURL,popularity,title);
             uniqueWords.addAll(Arrays.asList(tokens));
         }
         //TODO: update Term Frequency and isSpam
         String uniqueWordsText=String.join(" ",uniqueWords);
-        Tokenizer.updateWordsTF(uniqueWordsText,DocumentURL,TotalNumberofWords);
+        DBController dbController=  DBController.getInstance();
+        synchronized (dbController){
+            Tokenizer.updateWordsTF(uniqueWordsText,DocumentURL,TotalNumberofWords);
+        }
     }
 
 

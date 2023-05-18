@@ -28,7 +28,7 @@ public class Tokenizer {
 
     }
     //writes tokens to DB and returns them for use
-    static public String[] writeTokens(String Text, String currentSite, String placeOfOccurrence,double popularity,String title) {
+    static public String[] writeTokens(String Text, String currentSite,double popularity,String title) {
         String[] words = Text.split(" ");
 
 
@@ -45,7 +45,11 @@ public class Tokenizer {
             String word = words[i];
             String wordParagraph = getParagraph(words,i);
             String root = stemmer.stem(word);
-            DBController.addSiteWordToRoot(root,word,wordParagraph,placeOfOccurrence,currentSite,popularity,title);
+            DBController dbController=  DBController.getInstance();
+            synchronized (dbController){
+            DBController.addSiteWordToRoot(root,word,wordParagraph,currentSite,popularity,title);
+
+            }
 
         }
         return words;
@@ -69,8 +73,10 @@ public class Tokenizer {
             String root = stemmer.stem(word);
             System.out.println(root);
             //TODO: write to DB here
-            DBController.updateWordSiteTF(root,word,currentSite,TotalNoOfWords);
-
+            DBController dbController=  DBController.getInstance();
+            synchronized (dbController) {
+                DBController.updateWordSiteTF(root, word, currentSite, TotalNoOfWords);
+            }
         }
         return words;
     }
